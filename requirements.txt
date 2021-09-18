@@ -1,0 +1,6 @@
+scrapy
+mariadb
+pandas
+seaborn
+elasticsearch
+elasticsearch_dsl
