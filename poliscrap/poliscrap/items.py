@@ -17,4 +17,6 @@ class PoliscrapItem(scrapy.Item):
     description = Field()
     keywords = Field()
     persons = Field()
+    roles = Field()
+    circumstance = Field()
 

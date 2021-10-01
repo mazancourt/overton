@@ -9,6 +9,7 @@ import types
 
 from itemadapter import ItemAdapter
 from elasticsearch_dsl import connections, analyzer, InnerDoc, Keyword, Text, Document, Date, Nested, token_filter
+from collections import deque
 
 # see: https://jolicode.com/blog/construire-un-bon-analyzer-francais-pour-elasticsearch
 french_elision = token_filter("french_elision", type="elision", articles_case=True,
@@ -33,12 +34,10 @@ class Speech(Document):
     published = Date()
     fulltext = Text(analyzer=french_analyzer)
     description = Text(analyzer=french_analyzer)
+    circumstance = Text(analyzer=french_analyzer)
     category = Keyword()
     keywords = Nested(Kw)
     persons = Nested(Person)
-
-    class Index:
-        name = "speech-vie-publique"
 
 
 class PoliscrapPipeline:
@@ -68,14 +67,22 @@ class PoliscrapPipeline:
             return item
 
     def index_item(self, item):
-        s = Speech.search().query("match", url=item["url"])
+        s = Speech.search(index=item["index"]).query("match", url=item["url"])
         response = s.execute()
         if response.hits.total.value == 0:
-            speech = Speech(url=item["url"], title=item["title"], published=item["published"], fulltext=item["fulltext"],
-                            description=item["description"], category=item["category"])
+            speech = Speech(url=item["url"], title=item["title"], published=item["published"],
+                            fulltext=item["fulltext"],
+                            description=item["description"], category=item["category"],
+                            circumstance=item["circumstance"])
             speech.keywords = [Kw(kw=k.strip()) for k in item["keywords"]]
-            speech.persons = [Person(name=p[0], role=p[1]) for p in item["persons"]]
-            speech.save()
-            logging.debug(f"Saved speech with url {item['url']}")
+            q = deque(item["roles"])
+            speech.persons = []
+            for n in item["persons"]:
+                person = Person(name=n, role="")
+                if q:
+                    person.role = q.popleft()
+                speech.persons.append(person)
+            speech.save(index=item["index"])
+            logging.info(f"Saved speech with url {item['url']}")
         else:
-            logging.debug(f"Speech with url {item['url']} already indexed")
+            logging.info(f"Already indexed {item['url']}")

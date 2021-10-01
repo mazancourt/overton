@@ -9,9 +9,11 @@ from poliscrap.items import PoliscrapItem
 class ViePubliqueSpider(scrapy.Spider):
     name = 'vie_publique'
     allowed_domains = ['vie-publique.fr']
-    start_urls = ['https://www.vie-publique.fr/discours?page=1106']
+    start_urls = ['https://www.vie-publique.fr/discours']
     custom_settings = {
 #        'DEPTH_LIMIT': 2,
+#        'LOG_LEVEL': 'INFO',
+#        'LOG_FORMAT': '%(levelname)s: %(message)s'
     }
     link_extractor = LinkExtractor(restrict_css='div .teaserSimple--content')
 
@@ -32,6 +34,7 @@ class ViePubliqueSpider(scrapy.Spider):
         raw_text = raw_text.strip().replace("\xA0", " ")
 
         speech = PoliscrapItem()
+        speech["index"] = "speech-vie-publique"
         speech["url"] = response.url
         speech["title"] = response.css("h1::text").get().strip()
         speech["fulltext"] = raw_text
@@ -46,10 +49,11 @@ class ViePubliqueSpider(scrapy.Spider):
         speech["published"] = datetime.strptime(when, "%Y-%m-%dT%H:%M:%S%z")
         speech["description"] = response.css(".discour--desc > h2::text").get().strip()
         speech["keywords"] = [tag.strip() for tag in response.css(".btn-tag::text").getall()]
-        speech["persons"] = []
-        for p in zip(response.css("ul.line-intervenant").css("li::text").getall(),
-                     response.css("ul.line-intervenant").css("li").css("a::text").getall()):
-            name = p[1].strip()
-            role = re.sub(r"^[- \n]*", "", p[0]).strip()
-            speech["persons"].append((name, role))
+        speech["roles"] = [re.sub(r"^[- \n]*", "", r.strip())
+                           for r in response.css("ul.line-intervenant").css("li::text").getall()]
+        speech["persons"] = [p.strip() for p in response.css("ul.line-intervenant").css("li").css("a::text").getall()]
+        circumstance = response.css(".field--name-field-circonstance::text").get()
+        if circumstance:
+            circumstance = circumstance.strip()
+        speech["circumstance"] = circumstance
         yield speech

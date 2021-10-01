@@ -4,3 +4,6 @@ pandas
 seaborn
 elasticsearch
 elasticsearch_dsl
+youtube_transcript_api
+dateparser
+
