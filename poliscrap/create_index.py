@@ -3,8 +3,8 @@ import datetime
 import json
 import re
 
-connections.create_connection(hosts=['overton.mazancourt.com'], port=8881, use_ssl=True,
-                              http_auth=('elastic', 'mi3hmBVuKQ9fWTRquBDJ'))
+connections.create_connection(hosts=ELASTICSEARCH_SERVERS, port=8881, use_ssl=True,
+                              http_auth=(ELASTICSEARCH_USERNAME, ELASTICSEARCH_PASSWORD))
 
 # see: https://jolicode.com/blog/construire-un-bon-analyzer-francais-pour-elasticsearch
 french_elision = token_filter("french_elision", type="elision", articles_case=True,

@@ -88,7 +88,7 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-ELASTICSEARCH_USERNAME = "elastic"
-ELASTICSEARCH_PASSWORD = "mi3hmBVuKQ9fWTRquBDJ"
-ELASTICSEARCH_SERVERS = ["overton.mazancourt.com:8881"]
+ELASTICSEARCH_USERNAME = "change with elasticsearch username"
+ELASTICSEARCH_PASSWORD = "change with elasticsearch host"
+ELASTICSEARCH_SERVERS = ["my.elasticsearch.server"]
 
