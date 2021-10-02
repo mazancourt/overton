@@ -11,9 +11,7 @@ class ViePubliqueSpider(scrapy.Spider):
     allowed_domains = ['vie-publique.fr']
     start_urls = ['https://www.vie-publique.fr/discours']
     custom_settings = {
-#        'DEPTH_LIMIT': 2,
-#        'LOG_LEVEL': 'INFO',
-#        'LOG_FORMAT': '%(levelname)s: %(message)s'
+        'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0)
     }
     link_extractor = LinkExtractor(restrict_css='div .teaserSimple--content')
 

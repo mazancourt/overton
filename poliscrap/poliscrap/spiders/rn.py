@@ -1,3 +1,4 @@
+import os
 import re
 from datetime import datetime
 
@@ -13,10 +14,7 @@ class ViePubliqueSpider(scrapy.Spider):
     allowed_domains = ['rassemblementnational.fr']
     start_urls = ['https://rassemblementnational.fr']
     custom_settings = {
-                'DEPTH_LIMIT': 2,
-                'LOG_LEVEL': 'INFO',
-                'LOG_FORMAT': '%(levelname)s: %(message)s',
-#                'ITEM_PIPELINES': None
+                'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0),
     }
 
     def parse(self, response):
