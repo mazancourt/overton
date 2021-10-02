@@ -6,6 +6,7 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import os
 import pathlib
 
 BOT_NAME = 'poliscrap'
@@ -88,7 +89,10 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-ELASTICSEARCH_USERNAME = "change with elasticsearch username"
-ELASTICSEARCH_PASSWORD = "change with elasticsearch host"
-ELASTICSEARCH_SERVERS = ["my.elasticsearch.server"]
+LOG_LEVEL = 'INFO'
+LOG_FORMAT = '%(levelname)s: %(message)s'
+
+ELASTICSEARCH_USERNAME = os.environ.get("ELASTICSEARCH_USERNAME")
+ELASTICSEARCH_PASSWORD = os.environ.get("ELASTICSEARCH_PASSWORD")
+ELASTICSEARCH_SERVERS = [os.environ.get("ELASTICSEARCH_SERVER")]
 
