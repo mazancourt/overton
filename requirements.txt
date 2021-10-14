@@ -6,4 +6,16 @@ elasticsearch
 elasticsearch_dsl
 youtube_transcript_api
 dateparser
-
+ktrain
+tensorflow
+scikit-learn
+transformers
+tqdm
+numpy
+torch
+nltk
+itemadapter
+matplotlib
+feedparser
+pybuilder
+python-dotenv
