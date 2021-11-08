@@ -5,25 +5,30 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipe
 
 
 class Nlp:
+
+    sent_splitter = nltk.data.load("tokenizers/punkt/french.pickle")
+
     def __init__(self):
-        model = AutoModelForSequenceClassification.from_pretrained("Hugues/pol_sentence_classifier", use_auth_token=True)
-        tokenizer = AutoTokenizer.from_pretrained("Hugues/pol_sentence_classifier", use_auth_token=True)
+        model = AutoModelForSequenceClassification.from_pretrained("mazancourt/politics-sentence-classifier", use_auth_token=True)
+        tokenizer = AutoTokenizer.from_pretrained("mazancourt/politics-sentence-classifier", use_auth_token=True)
         self.nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
-        self.sent_splitter = nltk.data.load("tokenizers/punkt/french.pickle")
 
     def classify(self, text):
         outputs = self.nlp(text)
         return outputs[0]["label"], outputs[0]["score"]
 
-    def split_sentences(self, text, clean=True):
+    @classmethod
+    def split_sentences(cls, text, clean=True):
         if clean:
-            text = self.clean_text(text)
-        return self.sent_splitter.tokenize(text)
+            text = cls.clean_text(text)
+        return cls.sent_splitter.tokenize(text)
 
-    def clean_text(self, text):
+    @classmethod
+    def clean_text(cls, text):
         text = re.sub(r"(?<!\.)</p>", ".\n", text)
         text = re.sub(r"</p>", "\n", text)
         text = re.sub(r"<.*?>", " ", text)
+        text = re.sub("…", "...", text)
         text = re.sub(r"\s+", " ", text)
         return text
 

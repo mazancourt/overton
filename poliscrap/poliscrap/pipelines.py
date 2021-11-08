@@ -32,12 +32,26 @@ class PoliscrapPipeline:
 
     def index_item(self, item):
         s = Speech.search(index=item["index"], using=Polindex.es).query("match", url=item["url"])
-        response = s.execute()
-        if response.hits.total.value == 0:
-            speech = Speech(url=item["url"], title=item["title"], published=item["published"],
-                            fulltext=item["fulltext"],
-                            description=item["description"], category=item["category"],
-                            circumstance=item["circumstance"])
+        s = s.doc_type(Speech)
+        results = s.execute()
+        if results.hits.total.value == 0 or "update" in item["flags"]:
+            if results.hits.total.value == 0:
+                speech = Speech()
+            else:
+                speech = results[0]
+                logging.info("Updating existing Speech")
+                if results.hits.total.value > 1:
+                    logging.info("Deleting duplicates")
+                    for dup in results[1:]:
+                        dup.delete(index=item["index"], using=Polindex.es)
+            speech.url = item["url"]
+            speech.title = item["title"]
+            speech.published = item["published"]
+            speech.fulltext = item["fulltext"]
+            speech.description = item["description"]
+            speech.category = item["category"]
+            speech.circumstance = item["circumstance"]
+            speech.speaking = item["speaking"]
             speech.keywords = [Kw(kw=k.strip()) for k in item["keywords"]]
             q = deque(item["roles"])
             speech.persons = []
@@ -46,7 +60,7 @@ class PoliscrapPipeline:
                 if q:
                     person.role = q.popleft()
                 speech.persons.append(person)
-            speech.save(index=item["index"])
+            speech.save(index=item["index"], using=Polindex.es)
             logging.info(f"Saved speech with url {item['url']}")
         else:
             logging.info(f"Already indexed {item['url']}")

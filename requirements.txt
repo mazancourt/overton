@@ -6,7 +6,7 @@ elasticsearch
 elasticsearch_dsl
 youtube_transcript_api
 dateparser
-ktrain
+#ktrain
 tensorflow
 scikit-learn
 transformers
@@ -19,3 +19,9 @@ matplotlib
 feedparser
 pybuilder
 python-dotenv
+sentence-transformers
+spacy
+#pytextrank
+icecream
+gensim
+pyemd

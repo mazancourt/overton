@@ -14,7 +14,7 @@ class ViePubliqueSpider(scrapy.Spider):
     allowed_domains = ['rassemblementnational.fr']
     start_urls = ['https://rassemblementnational.fr']
     custom_settings = {
-                'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0),
+        'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0),
     }
 
     def parse(self, response):
@@ -65,6 +65,8 @@ class ViePubliqueSpider(scrapy.Spider):
         speech["roles"] = []
         speech["persons"] = [who]
         speech["circumstance"] = ""
+        speech["speaking"] = "UNK"
+        speech["flags"] = [os.environ.get("SPEECH_RN_FLAGS", "")]
         yield speech
 
     def parse_video(self, response, video_url, video_id):
@@ -83,4 +85,6 @@ class ViePubliqueSpider(scrapy.Spider):
         speech["roles"] = []
         speech["persons"] = []
         speech["circumstance"] = ""
+        speech["speaking"] = "UNK"
+        speech["flags"] = [os.environ.get("SPEECH_RN_FLAGS", "")]
         return speech

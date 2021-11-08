@@ -19,4 +19,6 @@ class PoliscrapItem(scrapy.Item):
     persons = Field()
     roles = Field()
     circumstance = Field()
+    speaking = Field()
+    flags = Field()
 
