@@ -12,11 +12,12 @@ class ViePubliqueSpider(scrapy.Spider):
     allowed_domains = ['vie-publique.fr']
     start_urls = ['https://www.vie-publique.fr/discours']
     custom_settings = {
-        'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0)
+    #    'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 200)
     }
     link_extractor = LinkExtractor(restrict_css='div .teaserSimple--content')
 
     def parse(self, response):
+        self.logger.info('Parsing from page %s', response.url)
         # Sur une page, on va chercher les discours référencés
         for link in self.link_extractor.extract_links(response):
             yield Request(link.url, callback=self.parse_speech)
@@ -28,8 +29,8 @@ class ViePubliqueSpider(scrapy.Spider):
 
     def parse_speech(self, response):
         raw_text = response.css(".field--name-field-texte-integral").get()
-        raw_text = re.sub(r"^<span.*?>\s+", "", raw_text)
-        raw_text = re.sub(r"\s+</span>$", "", raw_text)
+        raw_text = re.sub(r"^<span.*?>\s*", "", raw_text)
+        raw_text = re.sub(r"\s*</span>$", "", raw_text)
         raw_text = raw_text.strip().replace("\xA0", " ")
 
         speech = PoliscrapItem()
@@ -37,10 +38,10 @@ class ViePubliqueSpider(scrapy.Spider):
         speech["url"] = response.url
         speech["title"] = response.css("h1::text").get().strip()
         speech["fulltext"] = raw_text
-        cat = speech["title"].split(" ")[0].lower()
-        if cat == "interview":
+        cat = speech["title"].lower().split(" ")
+        if "interview" in cat:
             speech["category"] = "itw"
-        elif cat == "conseil":
+        elif cat[0] == "conseil":
             speech["category"] = "cm"
         else:
             speech["category"] = "com"
@@ -55,4 +56,21 @@ class ViePubliqueSpider(scrapy.Spider):
         if circumstance:
             circumstance = circumstance.strip()
         speech["circumstance"] = circumstance
+        speech["speaking"] = self.speaking(speech["persons"], speech["published"])
+        speech["flags"] = ["update"]
         yield speech
+
+    @staticmethod
+    def speaking(persons, published):
+        when = published.replace(tzinfo=None)
+        speakers = " ".join([p.lower() for p in persons])
+        if (re.match(r"\bemmanuel macron\b", speakers) and when >= datetime(2017, 5, 14)) or \
+            (re.match(r"\bfran.ois hollande\b", speakers) and datetime(2012, 5, 15) <= when < datetime(2017, 5, 14)) or \
+            (re.match(r"\bnicolas sarkozy\b", speakers) and datetime(2007, 5, 16) <= when < datetime(2012, 5, 15)) or \
+            (re.match(r"\bjacques chirac\b", speakers) and datetime(1995, 5, 17) <= when < datetime(2007, 5, 16)) or \
+            (re.match(r"\bfran.ois mitterrand\b", speakers) and datetime(1981, 5, 21) <= when < datetime(1995, 5, 17)) or \
+            (re.match(r"\bval.ry giscard d.estaing\b", speakers) and datetime(1974, 5, 27) <= when < datetime(1981, 5, 21)):
+            return "PR"
+        else:
+            return "UNK"
+

@@ -65,6 +65,7 @@ class ViePubliqueSpider(scrapy.Spider):
         speech["roles"] = []
         speech["persons"] = [who]
         speech["circumstance"] = ""
+        speech["speaking"] = "UNK"
         yield speech
 
     def parse_video(self, response, video_url, video_id):
@@ -83,4 +84,5 @@ class ViePubliqueSpider(scrapy.Spider):
         speech["roles"] = []
         speech["persons"] = []
         speech["circumstance"] = ""
+        speech["speaking"] = "UNK"
         return speech

@@ -39,6 +39,7 @@ class Speech(Document):
     category = Keyword()
     keywords = Nested(Kw)
     persons = Nested(Person)
+    speaking = Keyword()
 
 
 class Polindex:
