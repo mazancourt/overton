@@ -12,7 +12,7 @@ class ViePubliqueSpider(scrapy.Spider):
     allowed_domains = ['vie-publique.fr']
     start_urls = ['https://www.vie-publique.fr/discours']
     custom_settings = {
-    #    'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 200)
+        'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0)
     }
     link_extractor = LinkExtractor(restrict_css='div .teaserSimple--content')
 
@@ -57,7 +57,7 @@ class ViePubliqueSpider(scrapy.Spider):
             circumstance = circumstance.strip()
         speech["circumstance"] = circumstance
         speech["speaking"] = self.speaking(speech["persons"], speech["published"])
-        speech["flags"] = ["update"]
+        speech["flags"] = [os.environ.get("SPEECH_VIE_PUBLIQUE_FLAGS", "")]
         yield speech
 
     @staticmethod
