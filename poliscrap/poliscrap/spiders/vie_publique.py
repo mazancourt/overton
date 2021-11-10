@@ -10,7 +10,7 @@ from poliscrap.items import PoliscrapItem
 class ViePubliqueSpider(scrapy.Spider):
     name = 'vie_publique'
     allowed_domains = ['vie-publique.fr']
-    start_urls = ['https://www.vie-publique.fr/discours']
+    start_urls = [os.environ.get("START_URL", 'https://www.vie-publique.fr/discours')]
     custom_settings = {
         'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0)
     }
@@ -56,21 +56,25 @@ class ViePubliqueSpider(scrapy.Spider):
         if circumstance:
             circumstance = circumstance.strip()
         speech["circumstance"] = circumstance
-        speech["speaking"] = self.speaking(speech["persons"], speech["published"])
+        speech["speaking"] = self.speaking(speech["persons"], speech["roles"], speech["published"])
         speech["flags"] = [os.environ.get("SPEECH_VIE_PUBLIQUE_FLAGS", "")]
         yield speech
 
     @staticmethod
-    def speaking(persons, published):
+    def speaking(persons, roles, published):
         when = published.replace(tzinfo=None)
-        speakers = " ".join([p.lower() for p in persons])
-        if (re.match(r"\bemmanuel macron\b", speakers) and when >= datetime(2017, 5, 14)) or \
-            (re.match(r"\bfran.ois hollande\b", speakers) and datetime(2012, 5, 15) <= when < datetime(2017, 5, 14)) or \
-            (re.match(r"\bnicolas sarkozy\b", speakers) and datetime(2007, 5, 16) <= when < datetime(2012, 5, 15)) or \
-            (re.match(r"\bjacques chirac\b", speakers) and datetime(1995, 5, 17) <= when < datetime(2007, 5, 16)) or \
-            (re.match(r"\bfran.ois mitterrand\b", speakers) and datetime(1981, 5, 21) <= when < datetime(1995, 5, 17)) or \
-            (re.match(r"\bval.ry giscard d.estaing\b", speakers) and datetime(1974, 5, 27) <= when < datetime(1981, 5, 21)):
-            return "PR"
+        for r in roles:
+            if re.match(r"pr.+sident de la r.+publique", r.lower()):
+                return "PR"
+        for pers in persons:
+            p = pers.lower()
+            if (re.match(r"emmanuel macron", p) and when >= datetime(2017, 5, 14)) or \
+                (re.match(r"fran.+ois hollande", p) and datetime(2012, 5, 15) <= when < datetime(2017, 5, 14)) or \
+                (re.match(r"nicolas sarkozy", p) and datetime(2007, 5, 16) <= when < datetime(2012, 5, 15)) or \
+                (re.match(r"jacques chirac", p) and datetime(1995, 5, 17) <= when < datetime(2007, 5, 16)) or \
+                (re.match(r"fran.+ois mitterrand", p) and datetime(1981, 5, 21) <= when < datetime(1995, 5, 17)) or \
+                (re.match(r"val.+ry giscard d.+estaing", p) and datetime(1974, 5, 27) <= when < datetime(1981, 5, 21)):
+                return "PR"
         else:
             return "UNK"
 

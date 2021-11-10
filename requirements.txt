@@ -1,5 +1,4 @@
 scrapy
-mariadb
 pandas
 seaborn
 elasticsearch
