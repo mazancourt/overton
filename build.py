@@ -8,17 +8,17 @@ use_plugin("python.coverage")
 use_plugin("python.distutils")
 
 
-name = "politexts"
+name = "overton"
 default_task = "publish"
 version = "1.0.dev1"
-description = 'Crawling and indexing utilities'
+description = 'Crawling, indexing and parsing political texts'
 long_description = """
 This package provides basic tools to crawl sites, index data in ElasticSearch, manage indexes, create dashboards based
 on linguistic analysis. The Politexts is part of the Overton project, aimed at analyzing French political speeches, 
 especially for the 2022 election
 """
 license = """
-Copyright (c) 2021, Mazancourt Conseil and DataPolitics
+Copyright (c) 2021, Mazancourt Conseil
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

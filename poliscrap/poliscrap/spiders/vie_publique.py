@@ -29,10 +29,10 @@ class ViePubliqueSpider(scrapy.Spider):
 
     def parse_speech(self, response):
         raw_text = response.css(".field--name-field-texte-integral").get()
-        raw_text = re.sub(r"^<span.*?>\s*", "", raw_text)
-        raw_text = re.sub(r"\s*</span>$", "", raw_text)
-        raw_text = raw_text.strip().replace("\xA0", " ")
-
+        if raw_text:
+            raw_text = re.sub(r"^<span.*?>\s*", "", raw_text)
+            raw_text = re.sub(r"\s*</span>$", "", raw_text)
+            raw_text = raw_text.strip().replace("\xA0", " ")
         speech = PoliscrapItem()
         speech["index"] = "speech-vie-publique"
         speech["url"] = response.url
@@ -47,7 +47,10 @@ class ViePubliqueSpider(scrapy.Spider):
             speech["category"] = "com"
         when = response.xpath("//time/@datetime").get()
         speech["published"] = datetime.strptime(when, "%Y-%m-%dT%H:%M:%S%z")
-        speech["description"] = response.css(".discour--desc > h2::text").get().strip()
+        description = response.css(".discour--desc > h2::text").get()
+        if description:
+            description = description.strip()
+        speech["description"] = description
         speech["keywords"] = [tag.strip() for tag in response.css(".btn-tag::text").getall()]
         speech["roles"] = [re.sub(r"^[- \n]*", "", r.strip())
                            for r in response.css("ul.line-intervenant").css("li::text").getall()]
