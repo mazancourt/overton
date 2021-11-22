@@ -29,6 +29,7 @@ class Nlp:
         text = re.sub(r"</p>", "\n", text)
         text = re.sub(r"<.*?>", " ", text)
         text = re.sub("…", "...", text)
+        text = re.sub("’", "'", text)
         text = re.sub(r"\s+", " ", text)
         return text
 
