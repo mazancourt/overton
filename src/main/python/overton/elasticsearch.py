@@ -20,6 +20,7 @@ french_analyzer = analyzer('french_analyzer',
 
 # Person, Kw (keyword) and Speech are the basic elements of our index
 
+
 class Person(InnerDoc):
     name = Keyword()
     role = Text()

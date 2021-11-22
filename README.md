@@ -13,9 +13,10 @@ unit tests etc. The description of the project is in the `build.py` file.
 
 The following steps are required:
 
-1. build the `politexts` package
+1. build the `overton` package
 2. install it
-3. use `scrapy` to scrap and index websites
+3. create the index
+4. use `scrapy` to scrap and index websites
 
 ## Build
 
@@ -25,23 +26,33 @@ Simply type:
 pyb
 ```
 
-This will create a `politexts` package in the `target/dist` directory
+This will create a `overton` package in the `target/dist` directory
 
 ## Install
 
 The package created by `pybuilder` can be directly installed through `pip`
 
 ```shell
-pip install target/dist/politexts-1.0.dev1
+pip install target/dist/overton-1.0.dev1
 ```
 
 (replace version with the correct one)
+
+## Create index
+The following code will create the index and the corresponding mappings
+
+```python
+from overton.elasticsearch import Polindex
+
+Polindex.connect(servers="***", user="***", password="***")
+Polindex.create_index()
+```
 
 ## Scrap and index
 
 Scrapping is handled by [scrapy](https://scrapy.org). The provided pipelines index the speeches directly in ElasticSearch, using [elasticsearch_dsl](https://elasticsearch-dsl.readthedocs.io/en/latest/). The classes corresponding to the political speeches are defined in `src/main/python/politexts/elasticsearch`. The `politexts`package allows to use them freely in any client application.
 
-You must provide the following variables in your environment or directly in `poliscrap/poliscrap/settings.py`:
+You must provide the following variables in your environment or directly in `poliscrap/poliscrap/settings.py` (the same that were used for index creation)
 
 - `ELASTICSEARCH_HOSTS` : (list of) ES hosts
 - `ELASTICSEARCH_USERNAME`,

@@ -8,7 +8,7 @@ import logging
 import types
 from collections import deque
 
-from politexts.elasticsearch import Polindex, Speech, Person, Kw
+from overton.elasticsearch import Polindex, Speech, Person, Kw
 
 
 class PoliscrapPipeline:
