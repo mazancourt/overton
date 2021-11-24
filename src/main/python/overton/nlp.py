@@ -1,15 +1,19 @@
 import re
 import unicodedata
 import nltk
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+from itertools import chain
+from nltk import bigrams
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline, AutoModelForTokenClassification
 
 
-class Nlp:
-
-    sent_splitter = nltk.data.load("tokenizers/punkt/french.pickle")
+class Pso:
+    """
+    Classifier for sequences. Classifies as "problem", "solution" or "other"
+    """
 
     def __init__(self):
-        model = AutoModelForSequenceClassification.from_pretrained("mazancourt/politics-sentence-classifier", use_auth_token=True)
+        model = AutoModelForSequenceClassification.from_pretrained("mazancourt/politics-sentence-classifier",
+                                                                   use_auth_token=True)
         tokenizer = AutoTokenizer.from_pretrained("mazancourt/politics-sentence-classifier", use_auth_token=True)
         self.nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
@@ -17,11 +21,34 @@ class Nlp:
         outputs = self.nlp(text)
         return outputs[0]["label"], outputs[0]["score"]
 
-    @classmethod
-    def split_sentences(cls, text, clean=True):
-        if clean:
-            text = cls.clean_text(text)
-        return cls.sent_splitter.tokenize(text)
+
+class Punct:
+
+    def __init__(self):
+        model_name = "oliverguhr/fullstop-punctuation-multilang-large"
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForTokenClassification.from_pretrained(model_name)
+        self.nlp = pipeline("ner", tokenizer=tokenizer, model=model)
+
+    def rebuild_sentences(self, text):
+        text = re.sub(r"\s+", " ", text)
+        results = self.nlp(text, aggregation_strategy="simple")
+        sentence = ""
+        # restore punctuation from text
+        sentences = []
+        sentence = ""
+        for chunk in results:
+            sentence += text[chunk["start"]:chunk["end"]]
+            tag = chunk["entity_group"]
+            if tag != "0":
+                sentence += tag
+            if tag == ".":
+                sentences.append(sentence)
+                sentence = ""
+        if sentence:
+            sentences.append(sentence)
+
+        return [re.sub(r"^\s+", "", s) for s in sentences]
 
     @classmethod
     def clean_text(cls, text):
