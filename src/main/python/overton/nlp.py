@@ -1,8 +1,6 @@
 import re
 import unicodedata
-import nltk
-from itertools import chain
-from nltk import bigrams
+
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline, AutoModelForTokenClassification
 
 
@@ -12,9 +10,9 @@ class Pso:
     """
 
     def __init__(self):
-        model = AutoModelForSequenceClassification.from_pretrained("mazancourt/politics-sentence-classifier",
-                                                                   use_auth_token=True)
-        tokenizer = AutoTokenizer.from_pretrained("mazancourt/politics-sentence-classifier", use_auth_token=True)
+        model_name = "mazancourt/politics-sentence-classifier"
+        model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
     def classify(self, text):
@@ -28,27 +26,64 @@ class Punct:
         model_name = "oliverguhr/fullstop-punctuation-multilang-large"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForTokenClassification.from_pretrained(model_name)
-        self.nlp = pipeline("ner", tokenizer=tokenizer, model=model)
+        self.nlp = pipeline("ner", tokenizer=tokenizer, model=model, aggregation_strategy="simple")
+        # Max input size for model seems to be 2200, so 2000 is a good choice
+        self.MAX_SIZE = 2000
 
     def rebuild_sentences(self, text):
         text = re.sub(r"\s+", " ", text)
-        results = self.nlp(text, aggregation_strategy="simple")
+        text = re.sub(r"^\s+", "", text)
+        start = 0
+        text_length = len(text)
+        sentences = []
+        while start < text_length:
+            end = self._find_word_boundary(start, text)
+            if end == 0:
+                sents = self._rebuild_sentences(text[start:])[0]
+                sentences.extend(sents)
+                break
+            else:
+                sents, i = self._rebuild_sentences(text[start:end])
+                if i == 0 or len(sents) <= 1:
+                    sentences.extend(sents)
+                    start = end
+                else:
+                    sentences.extend(sents[:-1])
+                    start += i+1
+        return sentences
+
+    def _rebuild_sentences(self, text):
+        results = self.nlp(text)
         sentence = ""
         # restore punctuation from text
         sentences = []
         sentence = ""
-        for chunk in results:
-            sentence += text[chunk["start"]:chunk["end"]]
-            tag = chunk["entity_group"]
+        last_sentence_offset = 0
+        for item in results:
+            sentence += text[item["start"]:item["end"]]
+            tag = item["entity_group"]
             if tag != "0":
                 sentence += tag
-            if tag == ".":
+            if tag == "." or tag == "?":
                 sentences.append(sentence)
                 sentence = ""
+                last_sentence_offset = item["end"]
         if sentence:
             sentences.append(sentence)
 
-        return [re.sub(r"^\s+", "", s) for s in sentences]
+        return [re.sub(r"^\s+", "", s) for s in sentences], last_sentence_offset
+
+    # find offset of next text chunk
+    def _find_word_boundary(self, start, text):
+        text_length = len(text)
+        if text_length - start < self.MAX_SIZE:
+            return 0
+        try:
+            pos = text.index(" ", start + self.MAX_SIZE)
+        except ValueError:
+            # not found - hope remaining text is no too long
+            pos = 0
+        return pos
 
     @classmethod
     def clean_text(cls, text):
