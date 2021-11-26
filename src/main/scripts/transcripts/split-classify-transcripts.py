@@ -32,5 +32,5 @@ for source in root.glob("*.json"):
                 sent["type"] = pso.classify(sentence)[0]
                 d["sentences"].append(sent)
 
-    with open(Path("augmented") / source, "w", encoding="utf8") as out:
+    with open(Path("augmented") / file, "w", encoding="utf8") as out:
         json.dump(data, out)
