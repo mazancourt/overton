@@ -23,11 +23,12 @@ for f in root.glob("*json"):
             all_txt = open(all / "all.txt", "w", encoding="utf8")
 
             for s in d["sentences"]:
-                all_txt.write(s["text"] + "\n")
+                text = s["text"].capitalize() + "\n"
+                all_txt.write(text)
                 if s["type"] == "problem":
-                    pbm_txt.write(s["text"] + "\n")
+                    pbm_txt.write(text)
                 elif s["type"] == "solution":
-                    sol_txt.write(s["text"] + "\n")
+                    sol_txt.write(text)
             all_txt.flush()
             all_txt.close()
             pbm_txt.flush()
