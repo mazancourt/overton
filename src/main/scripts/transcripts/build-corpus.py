@@ -16,14 +16,20 @@ for f in root.glob("*json"):
             problem.mkdir(parents=True, exist_ok=True)
             solution = corpus / who / id / "solution" / "fr"
             solution.mkdir(parents=True, exist_ok=True)
+            all = corpus / who / id / "all" / "fr"
+            all.mkdir(parents=True, exist_ok=True)
             pbm_txt = open(problem / "problems.txt", "w", encoding="utf8")
             sol_txt = open(solution / "solutions.txt", "w", encoding="utf8")
+            all_txt = open(all / "all.txt", "w", encoding="utf8")
 
             for s in d["sentences"]:
+                all_txt.write(s["text"] + "\n")
                 if s["type"] == "problem":
                     pbm_txt.write(s["text"] + "\n")
                 elif s["type"] == "solution":
                     sol_txt.write(s["text"] + "\n")
+            all_txt.flush()
+            all_txt.close()
             pbm_txt.flush()
             pbm_txt.close()
             sol_txt.flush()
