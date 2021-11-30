@@ -40,9 +40,10 @@ def termsuite_extract(fulltext, corpus_path, video_id):
                 if line.startswith("#"):
                     continue
                 fields = line.split("\t")
-                item = categorizer.categorize(fields[2])
+                term = fields[2]
+                item = categorizer.categorize(term)
                 if item:
-                    terms.append(item)
+                    terms.append((term, item))
     return terms
 
 def process_json(data, corpus_path):
@@ -80,19 +81,19 @@ def process_json(data, corpus_path):
             if terms:
                 matched = dict()
                 for t in terms:
-                    matched[t.word] = 0
+                    matched[t[0]] = 0
                 for sent in tqdm(d["sentences"], desc="tag", unit="sentence"):
                     sent["categories"] = {}
                     for term in terms:
-                        if re.search(r"\b" + re.escape(term.word) + r"\b", sent["text"], re.IGNORECASE):
-                            matched[term.word] += 1
-                            if term.cat in sent["categories"]:
-                                sent["categories"][term.cat].append(term.theme)
+                        if re.search(r"\b" + re.escape(term[0]) + r"\b", sent["text"], re.IGNORECASE):
+                            matched[term[0]] += 1
+                            if term[1].cat in sent["categories"]:
+                                sent["categories"][term[1].cat].append(term[1].theme)
                             else:
-                                sent["categories"][term.cat] = [term.theme]
+                                sent["categories"][term[1].cat] = [term[1].theme]
                 missed = [w for w in matched if matched[w] == 0]
                 if missed:
-                    logger.warning("Missed %d out of %d terms in %s", len(missed), len(terms),video_id)
+                    logger.warning("Missed %d out of %d terms in %s", len(missed), len(terms), video_id)
                     logger.warning("Missing: %s", " & ".join(missed))
             else:
                 logger.warning("No terms for %s", video_id)
