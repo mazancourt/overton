@@ -18,7 +18,7 @@ pso = Pso()
 categorizer = Categorizer(os.environ.get("WORD_EMBEDDINGS"))
 logger = logging.getLogger(__name__)
 
-ts_cmd = ["java", "-cp",
+ts_cmd = ["/usr/bin/java", "-cp",
           "/home/hugues/.local/termsuite/termsuite-core-3.0.10.jar fr.univnantes.termsuite.tools.TerminologyExtractorCLI",
           "-t", "/home/hugues/.local/treetagger/", "--tsv-properties", "pilot,lemma,spec,freq", "-l", "fr"]
           # add:  -c corpus --tsv all.tsv"
