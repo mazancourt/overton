@@ -20,6 +20,31 @@ logger = logging.getLogger(__name__)
 
 TS_CMD = "./ts_wrapper.sh"
 
+
+def termsuite_extract(fulltext, corpus_path, video_id):
+    ts_corpus = corpus_path / video_id
+    ts_corpus_fr = ts_corpus / "fr"
+    ts_corpus_fr.mkdir(exist_ok=True, parents=True)
+    with open(ts_corpus_fr / "all.txt", "w", encoding="utf8") as all_corpus:
+        all_corpus.write(fulltext)
+    ts_output = ts_corpus / "all.tsv"
+    ts = [TS_CMD, ts_corpus.absolute().as_posix(), ts_output.absolute().as_posix() ]
+    p = subprocess.run(ts, capture_output=True)
+    if p.returncode != 0:
+        logger.warning("TermSuite failed: command %s returned %s", p.args, p.stderr)
+    # find terms associated with a category
+    terms = []
+    if ts_output.exists():
+        with open(ts_output, "r", encoding="utf8") as ts:
+            for line in ts.readlines():
+                if line.startswith("#"):
+                    continue
+                fields = line.split("\t")
+                item = categorizer.categorize(fields[2])
+                if item:
+                    terms.append(item)
+    return terms
+
 def process_json(data, corpus_path):
     """
     Processes a dictionary representing and transcripts.
@@ -35,6 +60,7 @@ def process_json(data, corpus_path):
         transcript = d["transcript"]
         text = []
         if transcript:
+            fulltext = ""
             if d["sentences"]:
                 fulltext = "\n".join([sent["text"].capitalize() for sent in d["sentences"]])
             else:
@@ -49,30 +75,12 @@ def process_json(data, corpus_path):
                     sent["type"] = pso.classify(sentence)[0]
                     d["sentences"].append(sent)
                     fulltext += sentence + "\n"
+            terms = termsuite_extract(fulltext, corpus_path, video_id)
             # Launch TermSuite on raw_text
-            ts_corpus = corpus_path / video_id
-            ts_corpus_fr = ts_corpus / "fr"
-            ts_corpus_fr.mkdir(exist_ok=True, parents=True)
-            with open(ts_corpus_fr / "all.txt", "w", encoding="utf8") as all_corpus:
-                all_corpus.write(fulltext)
-            ts_output = corpus_path / video_id / "all.tsv"
-            ts = [TS_CMD, ts_corpus.absolute().as_posix(), ts_output.absolute().as_posix() ]
-            p = subprocess.run(ts, capture_output=True)
-            if p.returncode != 0:
-                logger.warning("TermSuite failed: command %s returned %s", p.args, p.stderr)
-            # find terms on sentences
-            if ts_output.exists():
-                terms = []
-                matched = {}
-                with open(ts_output, "r", encoding="utf8") as ts:
-                    for line in ts.readlines():
-                        if line.startswith("#"):
-                            continue
-                        fields = line.split("\t")
-                        item = categorizer.categorize(fields[2])
-                        if item:
-                            terms.append(item)
-                            matched[item.word] = 0
+            if terms:
+                matched = dict()
+                for t in terms:
+                    matched[t.word] = 0
                 for sent in tqdm(d["sentences"], desc="tag", unit="sentence"):
                     sent["categories"] = {}
                     for term in terms:
@@ -84,8 +92,8 @@ def process_json(data, corpus_path):
                                 sent["categories"][term.cat] = [term.theme]
                 missed = [w for w in matched if matched[w] == 0]
                 if missed:
-                    logger.warning("Missed %d out of %d terms", len(missed), len(terms))
-                    logger.info(" & ".join(missed))
+                    logger.warning("Missed %d out of %d terms in %s", len(missed), len(terms),video_id)
+                    logger.warning("Missing: %s", " & ".join(missed))
             else:
                 logger.warning("No terms for %s", video_id)
     return data
