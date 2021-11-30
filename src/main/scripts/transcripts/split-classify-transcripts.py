@@ -36,24 +36,25 @@ def process_json(data, corpus_path):
         text = []
         if transcript:
             if d["sentences"]:
-                raw_text = "\n".join([sent["text"].capitalize() for sent in d["sentences"]])
+                fulltext = "\n".join([sent["text"].capitalize() for sent in d["sentences"]])
             else:
                 d["sentences"] = []
                 for chunk in transcript:
                     if not re.match(r"\[\w+?\]", chunk["text"]):
                         text.append(chunk["text"])
-                raw_text = "\n".join([t.capitalize() for t in text])
+                raw_text = " ".join(text)
                 for sentence in tqdm(punct.rebuild_sentences(raw_text), desc="classify", unit="sentence"):
                     sent = {}
                     sent["text"] = sentence
                     sent["type"] = pso.classify(sentence)[0]
                     d["sentences"].append(sent)
+                    fulltext += sentence + "\n"
             # Launch TermSuite on raw_text
             ts_corpus = corpus_path / video_id
             ts_corpus_fr = ts_corpus / "fr"
             ts_corpus_fr.mkdir(exist_ok=True, parents=True)
             with open(ts_corpus_fr / "all.txt", "w", encoding="utf8") as all_corpus:
-                all_corpus.write(raw_text)
+                all_corpus.write(fulltext)
             ts_output = corpus_path / video_id / "all.tsv"
             ts = [TS_CMD, ts_corpus.absolute().as_posix(), ts_output.absolute().as_posix() ]
             p = subprocess.run(ts, capture_output=True)
@@ -84,6 +85,7 @@ def process_json(data, corpus_path):
                 missed = [w for w in matched if matched[w] == 0]
                 if missed:
                     logger.warning("Missed %d out of %d terms", len(missed), len(terms))
+                    logger.info(" & ".join(missed))
             else:
                 logger.warning("No terms for %s", video_id)
     return data
