@@ -62,7 +62,7 @@ def process_json(data, corpus_path):
             ts.extend(["-c", ts_corpus.absolute().as_posix(), "--tsv", ts_output.absolute().as_posix()])
             p = subprocess.run(ts, capture_output=True)
             if p.returncode != 0:
-                logger.warning("TermSuite failed: ", p.stderr)
+                logger.warning("TermSuite failed: %s", p.stderr)
             # find terms on sentences
             if ts_output.exists():
                 terms = []
@@ -109,7 +109,8 @@ def process_jsons(source_path, target_path):
 
 
 if __name__ == '__main__':
-    source = sys.argv[1]
-    target = sys.argv[2]
+    source = Path(sys.argv[1])
+    target = Path(sys.argv[2])
     target.mkdir(exist_ok=True)
-    process_jsons(Path("augmented"), target)
+    print("Processing Json files from %s to %s" % (source, target))
+    process_jsons(source, target)
