@@ -18,7 +18,7 @@ pso = Pso()
 categorizer = Categorizer(os.environ.get("WORD_EMBEDDINGS"))
 logger = logging.getLogger(__name__)
 
-ts_cmd = ["/usr/bin/java", "-cp",
+TS_CMD = ["/usr/bin/java", "-cp",
           "/home/hugues/.local/termsuite/termsuite-core-3.0.10.jar fr.univnantes.termsuite.tools.TerminologyExtractorCLI",
           "-t", "/home/hugues/.local/treetagger/", "--tsv-properties", "pilot,lemma,spec,freq", "-l", "fr"]
           # add:  -c corpus --tsv all.tsv"
@@ -57,9 +57,10 @@ def process_json(data, corpus_path):
             ts_corpus_fr.mkdir(exist_ok=True, parents=True)
             with open(ts_corpus_fr / "all.txt", "w", encoding="utf8") as all_corpus:
                 all_corpus.write(raw_text)
-            ts = ts_cmd
+            ts = TS_CMD.copy()
             ts_output = corpus_path / video_id / "all.tsv"
             ts.extend(["-c", ts_corpus.absolute().as_posix(), "--tsv", ts_output.absolute().as_posix()])
+            logger.debug(ts)
             p = subprocess.run(ts, capture_output=True)
             if p.returncode != 0:
                 logger.warning("TermSuite failed: %s", p.stderr)
@@ -97,7 +98,7 @@ def process_jsons(source_path, target_path):
     for source in source_path.glob("*.json"):
         file = source.name
 #        corpus = Path(tempfile.TemporaryDirectory())
-        corpus = Path("ts-corpus")
+        corpus = Path("ts.corpus")
         corpus.mkdir(exist_ok=True)
         tqdm.write(file)
         with open(source, "r", encoding="utf8") as t:
