@@ -62,7 +62,7 @@ def process_json(data, corpus_path):
         text = []
         if transcript:
             fulltext = ""
-            if d["sentences"]:
+            if d.get("sentences"):
                 fulltext = "\n".join([sent["text"].capitalize() for sent in d["sentences"]])
             else:
                 d["sentences"] = []
