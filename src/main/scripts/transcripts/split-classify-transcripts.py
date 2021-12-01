@@ -58,7 +58,7 @@ def process_json(data, corpus_path):
     """
     for d in data:
         video_id = d["video_id"]
-        transcript = d["transcript"]
+        transcript = d.get("transcript")
         text = []
         if transcript:
             fulltext = ""
