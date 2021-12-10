@@ -10,14 +10,14 @@ for f in root.glob("*json"):
     with open(f, "r", encoding="utf8") as transcripts:
         data = json.load(transcripts)
     for d in data:
-        id = d["video_id"]
+        vid = d["video_id"]
         if "sentences" in d:
-            problem = corpus / who / id / "problem" / "fr"
+            problem = corpus / who / vid / "problem" / "fr"
             problem.mkdir(parents=True, exist_ok=True)
-            solution = corpus / who / id / "solution" / "fr"
+            solution = corpus / who / vid / "solution" / "fr"
             solution.mkdir(parents=True, exist_ok=True)
-            all = corpus / who / id / "all" / "fr"
-            all.mkdir(parents=True, exist_ok=True)
+            all_dir = corpus / who / vid / "all" / "fr"
+            all_dir.mkdir(parents=True, exist_ok=True)
             pbm_txt = open(problem / "problems.txt", "w", encoding="utf8")
             sol_txt = open(solution / "solutions.txt", "w", encoding="utf8")
             all_txt = open(all / "all.txt", "w", encoding="utf8")

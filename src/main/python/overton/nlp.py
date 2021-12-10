@@ -1,11 +1,6 @@
-import json
 import re
 import unicodedata
-import importlib.resources as pkg_resources
-from operator import itemgetter
 
-from gensim.models import KeyedVectors
-from nltk import word_tokenize
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline, AutoModelForTokenClassification
 
 
@@ -101,59 +96,7 @@ class Punct:
         return text
 
 
-class Entry:
-    def __init__(self, word, cat, theme):
-        self.word = word
-        self.tokens = word_tokenize(word, language="french")
-        self.cat = cat
-        self.theme = theme
 
-    def __str__(self):
-        return self.cat + "/" + self.theme + "/" + self.word
-
-
-class Categorizer:
-    def __init__(self, model_file, categories_file=None):
-        self.model = KeyedVectors.load_word2vec_format(model_file, binary=True, unicode_errors="ignore")
-        self.entries = self._load_entries(categories_file)
-
-    @staticmethod
-    def _load_entries(categories_file):
-        if categories_file:
-            with open(categories_file, encoding="utf8") as cat:
-                categories = json.load(cat)
-        else:
-            from . import models
-            with pkg_resources.open_text(models, "categories.json") as cat:
-                categories = json.load(cat)
-        entries = []
-        for c in categories:
-            for sc in categories[c]:
-                entries.extend([Entry(word=w, cat=c, theme=sc) for w in categories[c][sc]])
-        return entries
-
-    def categorize_scores(self, form, n_results=5):
-        tokens = word_tokenize(form, language="french")
-        match = [(term, self.model.wmdistance(tokens, term.tokens))
-                 for term in self.entries]
-        best = [m for m in match if m[1] < 1]
-        top = []
-        if best:
-            best.sort(key=itemgetter(1))
-            if best[0][1] < 0.1:
-                top = [best[0]]
-            elif len(best) > 15: # too ambiguous
-                top = []
-            else:
-                top = best
-        return top[0:min(len(top), n_results)]
-
-    def categorize(self, form):
-        cats = self.categorize_scores(form, 1)
-        if len(cats) > 0:
-            return cats[0][0]
-        else:
-            return None
 
 def strip_accents(text):
     """
