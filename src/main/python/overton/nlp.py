@@ -13,12 +13,13 @@ class Pso:
         model_name = "mazancourt/politics-sentence-classifier"
         model = AutoModelForSequenceClassification.from_pretrained(model_name)
         tokenizer = AutoTokenizer.from_pretrained(model_name)
+
         self.nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
     def classify(self, text):
         outputs = self.nlp(text)
         return outputs[0]["label"], outputs[0]["score"]
-
+      
 
 class Punct:
 
@@ -85,6 +86,7 @@ class Punct:
             pos = 0
         return pos
 
+
     @classmethod
     def clean_text(cls, text):
         text = re.sub(r"(?<!\.)</p>", ".\n", text)
@@ -94,8 +96,6 @@ class Punct:
         text = re.sub("’", "'", text)
         text = re.sub(r"\s+", " ", text)
         return text
-
-
 
 
 def strip_accents(text):

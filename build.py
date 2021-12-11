@@ -10,7 +10,9 @@ use_plugin("python.distutils")
 
 name = "overton"
 default_task = "publish"
+
 version = "1.1.dev1"
+
 description = 'Crawling, indexing and parsing political texts'
 long_description = """
 This package provides basic tools to crawl sites, index data in ElasticSearch, manage indexes, create dashboards based
