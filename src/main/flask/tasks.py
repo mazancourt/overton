@@ -32,16 +32,11 @@ def lazy_load():
         categorizer = Categorizer(model_file=flask_app.config["WORD_EMBEDDINGS"],
                                   categories_file=flask_app.config["CATEGORIES_JSON"],
                                   kill_list_file=flask_app.config["KILL_LIST"])
+
+
 @client.task(name='parse')
 def enhance_video(video_json):
-    logger.info("Analyzing video " + video_json["video_id"])
     lazy_load()
     parsed = parse_video(
-        video_json, punct=punct, pso=pso, categorizer=categorizer)
-    logger.info("Finished parsing video")
+        video_json, punct=punct, pso=pso, categorizer=categorizer, ts_server_url=flask_app.config["TS_SERVER_URL"])
     return parsed
-
-
-
-
-

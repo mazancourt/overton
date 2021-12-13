@@ -31,11 +31,12 @@ def extract():
             subprocess.run(ts, capture_output=True, check=True)
         except subprocess.CalledProcessError as ex:
             app.logger.warning("TermSuite failed: command %s returned %s", ex.cmd, ex.stderr)
-            return jsonify({"err": ex.returncode, "stderr": str(ex.stderr)})
+            return jsonify({"err": ex.returncode, "stderr": str(ex.stderr)}), 500
         terms = fields = []
         if ts_output.exists():
             with open(ts_output, "r", encoding="utf8") as ts:
                 for line in ts.readlines():
+                    line = line.strip()
                     if line.startswith("#") and not fields:
                         fields = line.split("\t")
                     else:

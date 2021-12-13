@@ -1,14 +1,29 @@
+import json
 import logging
 import re
-
-from tqdm import tqdm
+import requests
 
 logger = logging.getLogger(__name__)
 
-TS_CMD = "./ts_wrapper.sh"
+
+def ts_extract(fulltext, ts_server_url):
+    endpoint = ts_server_url + "/extract"
+    headers = {"Content-Type": "application/json;charset=utf-8" }
+    terms = []
+    try:
+        response = requests.post(endpoint, data=json.dumps({"text": fulltext}), headers=headers)
+    except Exception as err:
+        logger.warning("TS Extract error: WS raised exception %s", err)
+    if response.status_code != 200:
+        logger.warning("TS Extract error: bad response from WS: %s", response.text)
+    else:
+        for term in response.json():
+            if float(term["spec"] > 1):
+                terms.append(term["pilot"])
+    return terms
 
 
-def parse_video(video, pso, punct, categorizer):
+def parse_video(video, pso, punct, categorizer, ts_server_url):
     video_id = video["video_id"]
     has_sentences = video.get("sentences_split")
     transcript = video.get("transcript")
@@ -33,7 +48,7 @@ def parse_video(video, pso, punct, categorizer):
                     sent = {"text": sentence, "type": pso.classify(sentence)[0]}
                     video["sentences"].append(sent)
                     fulltext += sentence + "\n"
-        terms = []  # termsuite_extract(fulltext, corpus_path, video_id)
+        terms = ts_extract(fulltext, ts_server_url)
         if terms:
             for sent in video["sentences"]:
                 sent["categories"] = {}
