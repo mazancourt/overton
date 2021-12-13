@@ -1,5 +1,3 @@
-import logging
-
 from flask import Flask
 
 from worker.speech import parse_video
@@ -16,10 +14,6 @@ client = make_celery(flask_app)
 punct = None
 pso = None
 categorizer = None
-
-logger = logging.getLogger(__name__)
-
-TS_CMD = "./ts_wrapper.sh"
 
 
 def lazy_load():

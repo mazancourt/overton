@@ -1,9 +1,9 @@
 import json
-import logging
 import re
 import requests
+from celery.utils.log import get_task_logger
 
-logger = logging.getLogger(__name__)
+logger = get_task_logger(__name__)
 
 
 def ts_extract(fulltext, ts_server_url):
@@ -18,7 +18,7 @@ def ts_extract(fulltext, ts_server_url):
         logger.warning("TS Extract error: bad response from WS: %s", response.text)
     else:
         for term in response.json():
-            if float(term["spec"] > 1):
+            if float(term["spec"]) > 1:
                 terms.append(term["pilot"])
     return terms
 

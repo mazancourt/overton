@@ -2,7 +2,6 @@
 Simple RESTful client that forks TermSuite and collects extracted terms.
 A Java version would be more efficient...
 """
-import os
 import subprocess
 import tempfile
 from pathlib import Path

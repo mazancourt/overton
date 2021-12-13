@@ -1,12 +1,8 @@
 from flask import Flask, jsonify, request
-import logging
 from worker.celery import make_celery
 
 app = Flask(__name__)
 app.config.from_object("config")
-
-
-logger = logging.getLogger()
 
 client = make_celery(app)
 
@@ -24,7 +20,7 @@ def task_result(task_id):
         # https://github.com/celery/celery/issues/3596
         task = client.AsyncResult(task_id)
     except Exception as err:
-        logging.error("Error fetching results from worker: %s", err)
+        app.logger.error("Error fetching results from worker: %s", err)
         return 500
     if task.state == "SUCCESS":
         data = task.get()
@@ -40,5 +36,5 @@ def task_status(task_id):
     try:
         task = client.AsyncResult(task_id)
     except Exception as err:
-        logging.error("Error getting task status from worker: task_id=%s - %s", task_id, err)
+        app.logger.error("Error getting task status from worker: task_id=%s - %s", task_id, err)
     return jsonify({"status":task.state if task else "FAIL"})
