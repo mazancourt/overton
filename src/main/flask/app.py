@@ -14,7 +14,7 @@ client = make_celery(app)
 def transcript():
     video = request.get_json()
     task = client.send_task("parse", args=[video])
-    return {"id": task.id}, 200
+    return jsonify({"id": task.id})
 
 
 @app.route('/result/<task_id>')
@@ -27,7 +27,9 @@ def task_result(task_id):
         logging.error("Error fetching results from worker: %s", err)
         return 500
     if task.state == "SUCCESS":
-        return jsonify(task.get())
+        data = task.get()
+        # task.forget()
+        return jsonify(data)
     else:
         return jsonify(task.info)
 
