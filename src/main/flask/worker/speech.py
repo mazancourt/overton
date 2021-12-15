@@ -2,18 +2,20 @@ import json
 import re
 import requests
 from celery.utils.log import get_task_logger
+from nltk.tokenize import sent_tokenize
 
 logger = get_task_logger(__name__)
 
 
 def ts_extract(fulltext, ts_server_url):
     endpoint = ts_server_url + "/extract"
-    headers = {"Content-Type": "application/json;charset=utf-8" }
+    headers = {"Content-Type": "application/json;charset=utf-8"}
     terms = []
     try:
         response = requests.post(endpoint, data=json.dumps({"text": fulltext}), headers=headers)
     except Exception as err:
         logger.warning("TS Extract error: WS raised exception %s", err)
+        return terms
     if response.status_code != 200:
         logger.warning("TS Extract error: bad response from WS: %s", response.text)
     else:
@@ -23,43 +25,42 @@ def ts_extract(fulltext, ts_server_url):
     return terms
 
 
-def parse_video(video, pso, punct, categorizer, ts_server_url):
-    video_id = video["video_id"]
-    has_sentences = video.get("sentences_split")
-    transcript = video.get("transcript")
-    text = []
-    if transcript:
-        fulltext = ""
-        if video.get("sentences"):
-            fulltext = "\n".join([sent["text"].capitalize() for sent in video["sentences"]])
-        else:
-            video["sentences"] = []
-            for chunk in transcript:
-                if not re.match(r"\[\w+?]", chunk["text"]):
-                    text.append(chunk["text"])
-                if has_sentences:  # transcript already split in sentences
-                    s = chunk["text"]
-                    sent = {"text": s, "type": pso.classify(s)[0]}
-                    video["sentences"].append(sent)
-                fulltext = "\n".join([s["text"] for s in video["sentences"]])
-            if not has_sentences:
-                raw_text = " ".join(text)
-                for sentence in punct.rebuild_sentences(raw_text):
-                    sent = {"text": sentence, "type": pso.classify(sentence)[0]}
-                    video["sentences"].append(sent)
-                    fulltext += sentence + "\n"
-        terms = ts_extract(fulltext, ts_server_url)
-        if terms:
-            for sent in video["sentences"]:
-                sent["categories"] = {}
-                sentence_terms = []
-                for term in terms:
-                    if re.search(r"\b" + re.escape(term) + r"\b", sent["text"], re.IGNORECASE):
-                        sentence_terms.append(term)
-                cats, matches = categorizer.categorize_sentence(sent["text"], terms=sentence_terms)
-                sent["categories"] = dict((str(c), s) for c, s in cats)
-                # debug info:
-                sent["debug"] = dict((w, str(c)) for w, c in matches.items())
-        else:
-            logger.warning("No terms for %s", video_id)
-        return video
+def enhance(speech, pso, punct, categorizer, ts_server_url):
+    sentences_split = speech.get("sentences_split")
+    transcript = speech.get("transcript")
+    fulltext = speech.get("text")
+    # Step 1: rebuild full-text from transcript chunks if needed
+    if transcript and not fulltext:
+        parts = []
+        for chunk in transcript:
+            if not re.match(r"\[\w+?]", chunk["text"]):  # discard elements like "[Music]"
+                parts.append(chunk["text"])
+        fulltext = "\n".join(parts)
+    sentences = []
+    # Step 2: break full-text in sentences
+    if not sentences_split:  # need to discover punctuation
+        for sent in punct.rebuild_sentences(fulltext):
+            sentences.append({"text": sent})
+    else:  # sentences already have punctuation. Let's use a standard sentence splitter
+        for sent in sent_tokenize(fulltext, "french"):
+            sentences.append({"text": sent})
+    # Step 3: qualify each sentence as problem/solution/other
+    for sent in sentences:
+        sent["type"] = pso.classify(sent["text"])[0]
+    # Step 4: extract terms from fulltext and categorize them
+    terms = ts_extract(fulltext, ts_server_url)
+    if terms:
+        for sent in sentences:
+            sent["categories"] = {}
+            sentence_terms = []
+            for term in terms:
+                if re.search(r"\b" + re.escape(term) + r"\b", sent["text"], re.IGNORECASE):
+                    sentence_terms.append(term)
+            cats, matches = categorizer.categorize_sentence(sent["text"], terms=sentence_terms)
+            sent["categories"] = dict((str(c), s) for c, s in cats)
+            # debug info:
+            sent["debug"] = dict((w, str(c)) for w, c in matches.items())
+    else:
+        logger.warning("No terms found")
+    speech["sentences"] = sentences
+    return speech
