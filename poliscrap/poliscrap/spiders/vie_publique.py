@@ -10,7 +10,7 @@ from poliscrap.items import PoliscrapItem
 class ViePubliqueSpider(scrapy.Spider):
     name = 'vie_publique'
     allowed_domains = ['vie-publique.fr']
-    start_urls = [os.environ.get("START_URL", 'https://www.vie-publique.fr/discours')]
+    start_urls = [os.environ.get("START_URL", 'https://www.vie-publique.fr/discours/recherche')]
     custom_settings = {
         'DEPTH_LIMIT': os.environ.get("DEPTH_LIMIT", 0)
     }
