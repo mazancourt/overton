@@ -1,13 +1,16 @@
-# Categorization of phrases in the Overton Classification
-# uses both Spacy matcher to locate entries from the classification and
-# word2vec resources to semantically match extracted terms to classification entries (using Word Mover Distance)
+"""
+Categorization of phrases in the Overton Classification.
+
+Uses both Spacy matcher to locate entries from the classification and
+word2vec-like resources to semantically match extracted terms to classification entries (using Word Mover Distance)
+"""
 import functools
 import json
 import importlib.resources as pkg_resources
 import math
 import re
 from operator import itemgetter
-from typing import Optional
+from typing import Optional, List, Tuple
 from collections import Counter
 
 from gensim.models import KeyedVectors
@@ -32,6 +35,10 @@ class Entry:
 
 
 class Category:
+    """
+    Category from the classification.
+    Category may be hierarchical (several path_items)
+    """
     def __init__(self, path_items):
         self.path = path_items
 
@@ -46,11 +53,19 @@ class Category:
 
     @staticmethod
     def from_str(text: str):
+        """
+        Parse a string to build a category
+        :param text: category name like "a/b/c"
+        :return: the Category object
+        """
         path = text.split("/")
         return Category(path)
 
 
 class ClassificationTree:
+    """
+    A ClassificationTree represents the whole categorization scheme, including categories and example terms
+    """
     def __init__(self, categories_file):
         self.entries = []
         self._load_entries(categories_file)
@@ -80,11 +95,13 @@ class ClassificationTree:
             self.entries.extend([Entry(word=w, path=path) for w in node])
 
 
-# terms to remove from vector comparison (too noisy)
 class KillList:
+    """
+    List of terms to remove from vector comparison (too noisy)
+    """
     def __init__(self, pathname):
         self.kill = []
-        self.killre = re.compile(r"\b(?:est|sont)\b", re.IGNORECASE | re.UNICODE)
+        self.kill_re = re.compile(r"\b(?:est|sont)\b", re.IGNORECASE | re.UNICODE)
 
         if pathname:
             with open(pathname, "r", encoding="utf8") as k:
@@ -96,7 +113,7 @@ class KillList:
                         self.kill.append(line)
 
     def __contains__(self, item):
-        return item in self.kill or re.search(r"\b(?:est|sont)\b", item)
+        return item in self.kill or re.search(self.kill_re, item)
 
 
 class Categorizer:
@@ -124,17 +141,31 @@ class Categorizer:
         for entry in self.classification.entries:
             entry.has_oov = self.has_oov(entry.tokens)
 
-    def has_oov(self, tokens):
+    def has_oov(self, tokens: List[str]) -> bool:
+        """
+        Tests if the list of tokens contains an out-of-vocabulary token
+        :param tokens: token list
+        :return: True if at least one token is OOV
+        """
         return len([t for t in tokens if t not in self.model.key_to_index]) > 0
 
-    def direct_match(self, text: str):
+    def all_oov(self, tokens: List[str]) -> bool:
+        """
+        Tests if the list of tokens contains only out-of-vocabulary tokens
+        :param tokens: token list
+        :return: True if all tokens are OOV
+        """
+        return len([t for t in tokens if t not in self.model.key_to_index]) == len(tokens)
+
+    @functools.lru_cache(maxsize=2048)
+    def direct_match(self, text: str) -> Tuple:
         """
         evaluates a direct match with the classification (using Spacy Matchers)
         :param text:
         :return: dict of folders associated with match count and a dict of matches
         """
         counter = Counter()
-        matches = dict()
+        matches = {}
         doc = self.parser(text)
         for match_id, start, end in self.matcher(doc):
             term = doc[start:end].text
@@ -144,11 +175,19 @@ class Categorizer:
         return counter, matches
 
     @functools.lru_cache(maxsize=2048)
-    def categorize_scores(self, form, n_results=5):
+    def categorize_scores(self, form: str, n_results=5) -> List:
+        """
+        Gets the semantically closest categories from the input form, using word embeddings
+        :param form: the input text
+        :param n_results: max number of results
+        :return: A list of couples [category, distance], sorted by distance
+        """
         if form in self.kill_list:
             return []
         else:
             tokens = word_tokenize(form, language="french")
+            if self.all_oov(tokens):
+                return []
             match = [(term, self.model.wmdistance(tokens, term.tokens))
                      for term in self.classification.entries if not term.has_oov]
             best = [m for m in match if m[1] < 1]

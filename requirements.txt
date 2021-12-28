@@ -26,7 +26,6 @@ gensim
 pyemd
 
 datasets
-politexts
 setuptools
 pip
 toml
@@ -49,3 +48,5 @@ Pillow
 chardet
 pyparsing
 zipp
+flask
+celery

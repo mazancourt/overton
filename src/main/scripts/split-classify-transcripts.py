@@ -14,8 +14,8 @@ from overton.category import Categorizer
 
 dotenv.load_dotenv()
 
-punct = Punct()
-pso = Pso()
+PUNCT = Punct()
+PSO = Pso()
 categorizer = Categorizer(model_file=os.environ.get("WORD_EMBEDDINGS"),
                           categories_file=os.environ.get("CATEGORIES_JSON"),
                           kill_list_file=os.environ.get("KILL_LIST"))
@@ -77,15 +77,15 @@ def process_json(data, corpus_path):
                         text.append(chunk["text"])
                     if has_sentences:   # transcript already split in sentences
                         s = chunk["text"]
-                        sent = {"text": s, "type": pso.classify(s)[0]}
+                        sent = {"text": s, "type": PSO.classify(s)[0]}
                         d["sentences"].append(sent)
                     fulltext = "\n".join([s["text"] for s in d["sentences"]])
                 if not has_sentences:
                     raw_text = " ".join(text)
-                    for sentence in tqdm(punct.rebuild_sentences(raw_text), desc="classify", unit="sentence"):
+                    for sentence in tqdm(PUNCT.rebuild_sentences(raw_text), desc="classify", unit="sentence"):
                         sent = {}
                         sent["text"] = sentence
-                        sent["type"] = pso.classify(sentence)[0]
+                        sent["type"] = PSO.classify(sentence)[0]
                         d["sentences"].append(sent)
                         fulltext += sentence + "\n"
             terms = termsuite_extract(fulltext, corpus_path, video_id)
