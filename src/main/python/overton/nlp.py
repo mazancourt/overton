@@ -32,11 +32,13 @@ class Punct:
         self.MAX_SIZE = 2000
 
     def rebuild_sentences(self, text):
+        sentences = []
+        if not text:
+            return sentences
         text = re.sub(r"\s+", " ", text)
         text = re.sub(r"^\s+", "", text)
         start = 0
         text_length = len(text)
-        sentences = []
         while start < text_length:
             end = self._find_word_boundary(start, text)
             if end == 0:
