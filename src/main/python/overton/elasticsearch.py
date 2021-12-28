@@ -14,9 +14,16 @@ from elasticsearch_dsl import analyzer, InnerDoc, Keyword, Text, Document, Date,
 french_elision = token_filter("french_elision", type="elision", articles_case=True,
                               articles=["l", "m", "t", "qu", "n", "s", "j", "d", "c", "jusqu", "quoiqu", "lorsqu",
                                         "puisqu"])
+french_stemmer = token_filter("french_stemmer", type="stemmer", language="light_french")
+
 french_analyzer = analyzer('french_analyzer',
                            tokenizer="icu_tokenizer",
                            filter=[french_elision, "icu_folding"])
+
+french_stemmer = analyzer('french_stemmer',
+                          tokenizer="icu_tokenizer",
+                          filter=[french_elision, "icu_folding", french_stemmer])
+
 
 # Person, Kw (keyword) and Speech are the basic elements of our index
 
@@ -32,11 +39,11 @@ class Kw(InnerDoc):
 
 class Speech(Document):
     url = Keyword()
-    title = Text(analyzer=french_analyzer)
+    title = Text(analyzer=french_analyzer, fields={"stemmed": Text(analyzer=french_stemmer)})
     published = Date()
-    fulltext = Text(analyzer=french_analyzer)
-    description = Text(analyzer=french_analyzer)
-    circumstance = Text(analyzer=french_analyzer)
+    fulltext = Text(analyzer=french_analyzer, fields={"stemmed": Text(analyzer=french_stemmer)})
+    description = Text(analyzer=french_analyzer, fields={"stemmed": Text(analyzer=french_stemmer)})
+    circumstance = Text(analyzer=french_analyzer, fields={"stemmed": Text(analyzer=french_stemmer)})
     category = Keyword()
     keywords = Nested(Kw)
     persons = Nested(Person)

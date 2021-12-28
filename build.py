@@ -11,7 +11,7 @@ use_plugin("python.distutils")
 name = "overton"
 default_task = "publish"
 
-version = "1.1.dev1"
+version = "1.1.dev2"
 
 description = 'Crawling, indexing and parsing political texts'
 long_description = """
