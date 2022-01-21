@@ -1,31 +1,17 @@
 import json
+import math
 import re
-import requests
+from collections import defaultdict
+from operator import itemgetter
+
 from celery.utils.log import get_task_logger
-from nltk.tokenize import sent_tokenize
+from nltk.tokenize import sent_tokenize, word_tokenize
+from howler.combo_basic import helper_get_subsequences
 
 logger = get_task_logger(__name__)
 
 
-def ts_extract(fulltext, ts_server_url):
-    endpoint = ts_server_url + "/extract"
-    headers = {"Content-Type": "application/json;charset=utf-8"}
-    terms = []
-    try:
-        response = requests.post(endpoint, data=json.dumps({"text": fulltext}), headers=headers)
-    except Exception as err:
-        logger.warning("TS Extract error: WS raised exception %s", err)
-        return terms
-    if response.status_code != 200:
-        logger.warning("TS Extract error: bad response from WS: %s", response.text)
-    else:
-        for term in response.json():
-            if float(term["spec"]) > 1:
-                terms.append(term["pilot"])
-    return terms
-
-
-def enhance(speech, pso, punct, categorizer, ts_server_url):
+def enhance(speech, pso, punct, categorizer):
     sentences_split = speech.get("sentences_split")
     transcript = speech.get("transcript")
     fulltext = speech.get("text")
@@ -38,6 +24,7 @@ def enhance(speech, pso, punct, categorizer, ts_server_url):
         fulltext = "\n".join(parts)
     sentences = []
     # Step 2: break full-text in sentences
+    logger.info("Rebuilding sentences")
     if not sentences_split:  # need to discover punctuation
         for sent in punct.rebuild_sentences(fulltext):
             sentences.append({"text": sent})
@@ -45,22 +32,55 @@ def enhance(speech, pso, punct, categorizer, ts_server_url):
         for sent in sent_tokenize(fulltext, "french"):
             sentences.append({"text": sent})
     # Step 3: qualify each sentence as problem/solution/other
+    logger.info("Qualifying sentences")
     for sent in sentences:
         sent["type"] = pso.classify(sent["text"])[0]
     # Step 4: extract terms from fulltext and categorize them
-    terms = ts_extract(fulltext, ts_server_url)
+    logger.info("Extracting terms & categories")
+    terms = categorizer(fulltext)
+    logger.info("Mapping terms to sentences")
     if terms:
         for sent in sentences:
             sent["categories"] = {}
             sentence_terms = []
-            for term in terms:
+            for term in terms.keys():
                 if re.search(r"\b" + re.escape(term) + r"\b", sent["text"], re.IGNORECASE):
                     sentence_terms.append(term)
-            cats, matches = categorizer.categorize_sentence(sent["text"], terms=sentence_terms)
+            # remove sub-terms, except those from the classification
+            all_subsequences = []
+            components = []
+            for term in sentence_terms:
+                all_subsequences.extend(helper_get_subsequences(term))
+                if " " in term:
+                    all_subsequences.extend(word_tokenize(term))
+            sentence_terms = [t for t in sentence_terms if t not in all_subsequences or terms[t]["match"] == "direct"]
+            # Now compute the best category for the sentence
+            sentence_categories = defaultdict(float)
+            for sentence_term in sentence_terms:
+                category = terms[sentence_term]["category"]
+                if not category:
+                    continue
+                term_cat_score = terms[sentence_term]["cat_score"]
+                if not term_cat_score:  # bonus for direct match
+                    term_cat_score = 1.1
+                sentence_categories[category] += term_cat_score
+            # Normalize through softmax
+            e_sum = sum([math.exp(x) for x in sentence_categories.values()])
+            cats = []
+            for cat in sentence_categories.keys():
+                cats.append((cat, math.exp(sentence_categories[cat]) / e_sum))
+            # sort categories by score
+            cats.sort(key=itemgetter(1), reverse=True)
             sent["categories"] = dict((str(c), s) for c, s in cats)
-            # debug info:
-            sent["debug"] = dict((w, str(c)) for w, c in matches.items())
+            # debug info: get source matching cat
+            sent["debug"] = {}
+            for t in sentence_terms:
+                c = terms[t]["category"]
+                if c and terms[t]["source"]:
+                    c += ":" + terms[t]["source"]
+                sent["debug"][t] = c
     else:
         logger.warning("No terms found")
     speech["sentences"] = sentences
+    speech["classification_version"] = categorizer.classification_version()
     return speech
