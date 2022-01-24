@@ -1,4 +1,4 @@
-import json
+import time
 import math
 import re
 from collections import defaultdict
@@ -12,6 +12,7 @@ logger = get_task_logger(__name__)
 
 
 def enhance(speech, pso, punct, categorizer):
+    start = time.time()
     sentences_split = speech.get("sentences_split")
     transcript = speech.get("transcript")
     fulltext = speech.get("text")
@@ -40,15 +41,17 @@ def enhance(speech, pso, punct, categorizer):
     terms = categorizer(fulltext)
     logger.info("Mapping terms to sentences")
     if terms:
+        lookup_term_re = {}
+        for term in terms:
+            lookup_term_re[term] = re.compile(r"\b" + re.escape(term) + r"\b", re.IGNORECASE)
         for sent in sentences:
             sent["categories"] = {}
             sentence_terms = []
-            for term in terms.keys():
-                if re.search(r"\b" + re.escape(term) + r"\b", sent["text"], re.IGNORECASE):
+            for term in terms:
+                if re.search(lookup_term_re[term], sent["text"]):
                     sentence_terms.append(term)
             # remove sub-terms, except those from the classification
             all_subsequences = []
-            components = []
             for term in sentence_terms:
                 all_subsequences.extend(helper_get_subsequences(term))
                 if " " in term:
@@ -83,4 +86,5 @@ def enhance(speech, pso, punct, categorizer):
         logger.warning("No terms found")
     speech["sentences"] = sentences
     speech["classification_version"] = categorizer.classification_version()
+    speech["elapsed"] = time.time() - start
     return speech
