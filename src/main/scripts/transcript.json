@@ -1,0 +1,42 @@
+{
+  "kind": "youtube#searchResult",
+  "etag": "DescdPPqI2TLPotUywjYP9yNVIA",
+  "id": {
+    "kind": "youtube#video",
+    "videoId": "Sg8G3N2jWMg"
+  },
+  "snippet": {
+    "publishedAt": "2022-01-22T18:10:23Z",
+    "channelId": "UCf4X1X6iE6mrNfsxYQcUxRA",
+    "title": "Marine Le Pen : \u00ab Avec moi on tol\u00e9rera pas \u00e7a \u00bb \ud83e\udd23",
+    "description": "",
+    "thumbnails": {
+      "default": {
+        "url": "https://i.ytimg.com/vi/Sg8G3N2jWMg/default.jpg",
+        "width": 120,
+        "height": 90
+      },
+      "medium": {
+        "url": "https://i.ytimg.com/vi/Sg8G3N2jWMg/mqdefault.jpg",
+        "width": 320,
+        "height": 180
+      },
+      "high": {
+        "url": "https://i.ytimg.com/vi/Sg8G3N2jWMg/hqdefault.jpg",
+        "width": 480,
+        "height": 360
+      }
+    },
+    "channelTitle": "BenkaOfficial",
+    "liveBroadcastContent": "none",
+    "publishTime": "2022-01-22T18:10:23Z"
+  },
+  "REASON_TO_KEEP": "Pattern found in title",
+  "transcript": [
+    {
+      "text": "avec moi on tol\u00e9rera pas \u00e7a",
+      "start": 0.0,
+      "duration": 3.29
+    }
+  ]
+}

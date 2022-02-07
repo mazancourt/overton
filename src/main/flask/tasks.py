@@ -3,12 +3,12 @@ Definition of Celery task to enhance a speech
 """
 
 from flask import Flask
+from howler.deep import SentenceBuilder, Pso, Semantizer
 
 from worker.speech import enhance
 from worker.celery import make_celery
 
-from overton.category import Categorizer
-from overton.nlp import Punct, Pso
+from howler.howler import Howler
 
 flask_app = Flask(__name__)
 flask_app.config.from_object("config")
@@ -25,13 +25,15 @@ CATEGORIZER = None
 def _lazy_load():
     global PUNCT, PSO, CATEGORIZER
     if not PUNCT:
-        PUNCT = Punct()
+        PUNCT = SentenceBuilder()
     if not PSO:
         PSO = Pso()
     if not CATEGORIZER:
-        CATEGORIZER = Categorizer(model_file=flask_app.config["WORD_EMBEDDINGS"],
-                                  categories_file=flask_app.config["CATEGORIES_JSON"],
-                                  kill_list_file=flask_app.config["KILL_LIST"])
+        CATEGORIZER = Howler("fr",
+                             categorisation_file=flask_app.config["CATEGORIES_JSON"],
+                             stop_list_file=flask_app.config["KILL_LIST"])
+        CATEGORIZER.config(compound_score_ratio=0.0, simple_word_min_score=0.0,
+                           semantizer=Semantizer(), similarity_threshold=0.56)
 
 
 @client.task
@@ -43,5 +45,5 @@ def enhance_speech(speech_json):
     """
     _lazy_load()
     parsed = enhance(
-        speech_json, punct=PUNCT, pso=PSO, categorizer=CATEGORIZER, ts_server_url=flask_app.config["TS_SERVER_URL"])
+        speech_json, punct=PUNCT, pso=PSO, categorizer=CATEGORIZER)
     return parsed
