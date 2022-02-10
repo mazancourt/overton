@@ -7,6 +7,7 @@ from operator import itemgetter
 from celery.utils.log import get_task_logger
 from nltk.tokenize import sent_tokenize, word_tokenize
 from howler.combo_basic import helper_get_subsequences
+from worker.aligner import align_sentences
 
 logger = get_task_logger(__name__)
 
@@ -18,11 +19,11 @@ def enhance(speech, pso, punct, categorizer):
     fulltext = speech.get("text")
     # Step 1: rebuild full-text from transcript chunks if needed
     if transcript and not fulltext:
-        parts = []
+        filtered_transcript = []
         for chunk in transcript:
             if not re.match(r"\[\w+?]", chunk["text"]):  # discard elements like "[Music]"
-                parts.append(chunk["text"])
-        fulltext = "\n".join(parts)
+                filtered_transcript.append(chunk)
+        fulltext = "\n".join([t["text"] for t in filtered_transcript])
     sentences = []
     # Step 2: break full-text in sentences
     logger.info("Rebuilding sentences")
@@ -32,6 +33,10 @@ def enhance(speech, pso, punct, categorizer):
     else:  # sentences already have punctuation. Let's use a standard sentence splitter
         for sent in sent_tokenize(fulltext, "french"):
             sentences.append({"text": sent})
+    # Step 2.1: re-align timestamps from transcript if transcripts are available
+    if "transcript" in speech:
+        logger.info("Re-building timestamps for sentences")
+        align_sentences(filtered_transcript, sentences)
     # Step 3: qualify each sentence as problem/solution/other
     logger.info("Qualifying sentences")
     for sent in sentences:
