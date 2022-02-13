@@ -17,9 +17,9 @@ def enhance(speech, pso, punct, categorizer):
     sentences_split = speech.get("sentences_split")
     transcript = speech.get("transcript")
     fulltext = speech.get("text")
+    filtered_transcript = []
     # Step 1: rebuild full-text from transcript chunks if needed
     if transcript and not fulltext:
-        filtered_transcript = []
         for chunk in transcript:
             if not re.match(r"\[\w+?]", chunk["text"]):  # discard elements like "[Music]"
                 filtered_transcript.append(chunk)
@@ -34,7 +34,7 @@ def enhance(speech, pso, punct, categorizer):
         for sent in sent_tokenize(fulltext, "french"):
             sentences.append({"text": sent})
     # Step 2.1: re-align timestamps from transcript if transcripts are available
-    if "transcript" in speech:
+    if filtered_transcript:
         logger.info("Re-building timestamps for sentences")
         align_sentences(filtered_transcript, sentences)
     # Step 3: qualify each sentence as problem/solution/other
