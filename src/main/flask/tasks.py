@@ -3,12 +3,12 @@ Definition of Celery task to enhance a speech
 """
 
 from flask import Flask
-from howler.deep import SentenceBuilder, Pso, Semantizer
+from howler import SentenceBuilder, Semantizer, Howler
+from howler.deep import Pso
 
 from worker.speech import enhance
 from worker.celery import make_celery
 
-from howler.howler import Howler
 
 flask_app = Flask(__name__)
 flask_app.config.from_object("config")

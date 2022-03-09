@@ -1,17 +1,15 @@
-howler
+howler>=1.1.0
 scrapy
 pandas
-seaborn
 elasticsearch
 elasticsearch_dsl
 youtube_transcript_api
 dateparser
 flask
 celery
-nltk
 python-dotenv
 redis
-https://github.com/explosion/spacy-models/releases/download/fr_core_news_md-3.2.0/fr_core_news_md-3.2.0.tar.gz
 # force version < 0.11 due to transformers 4.15.0 from howler
-tokenizers==0.10.3
-gensim
+#tokenizers==0.10.3
+# Apparently not enclosed as howler dependency - Keep in sync with Howler's version
+https://github.com/explosion/spacy-models/releases/download/fr_core_news_md-3.2.0/fr_core_news_md-3.2.0.tar.gz
