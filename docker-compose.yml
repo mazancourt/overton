@@ -1,6 +1,7 @@
 # Redis with a password, to avoid external attacks
-redis:
-    image: 'redis'
-    command: redis-server --requirepass nlp4tf1
-    ports:
-        - '6379:6379'
+services:
+    redis:
+        image: 'redis'
+        command: redis-server --requirepass nlp4tf1
+        ports:
+            - '6379:6379'

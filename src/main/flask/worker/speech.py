@@ -7,10 +7,12 @@ from operator import itemgetter
 from celery.utils.log import get_task_logger
 from nltk.tokenize import sent_tokenize, word_tokenize
 from howler.combo_basic import helper_get_subsequences
+from howler import TextTiler
 from worker.aligner import align_sentences
 
 logger = get_task_logger(__name__)
 
+tiler = TextTiler()
 
 def enhance(speech, pso, punct, categorizer):
     start = time.time()
@@ -37,11 +39,16 @@ def enhance(speech, pso, punct, categorizer):
     if filtered_transcript:
         logger.info("Re-building timestamps for sentences")
         align_sentences(filtered_transcript, sentences)
-    # Step 3: qualify each sentence as problem/solution/other
+    # Step 3: group sentences in chunks
+    logger.info("Detecting text chunks")
+    tiles = tiler.tile([sent["text"] for sent in sentences])
+    for i, sent in enumerate(sentences):
+        sent["chunk_id"] = tiles[i]
+    # Step 4: qualify each sentence as problem/solution/other
     logger.info("Qualifying sentences")
     for sent in sentences:
         sent["type"] = pso.classify(sent["text"])[0]
-    # Step 4: extract terms from fulltext and categorize them
+    # Step 5: extract terms from fulltext and categorize them
     logger.info("Extracting terms & categories")
     terms = categorizer(fulltext)
     logger.info("Mapping terms to sentences")
