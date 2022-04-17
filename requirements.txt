@@ -1,4 +1,4 @@
-howler>=1.1.0
+howler==1.2.0
 scrapy
 pandas
 elasticsearch
@@ -13,3 +13,5 @@ redis
 #tokenizers==0.10.3
 # Apparently not enclosed as howler dependency - Keep in sync with Howler's version
 https://github.com/explosion/spacy-models/releases/download/fr_core_news_md-3.2.0/fr_core_news_md-3.2.0.tar.gz
+
+nltk
