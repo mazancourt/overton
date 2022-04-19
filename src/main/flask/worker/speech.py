@@ -30,15 +30,16 @@ def enhance(speech, pso, punct, categorizer):
 
     if content_type == "transcript":
         transcript_pipeline(speech, pso, punct, categorizer)
-    if content_type == "text/raw":
+    elif content_type == "text/raw":
         raw_text_pipeline(speech, pso, punct, categorizer)
-    if content_type == "text/punctuated":
+    elif content_type == "text/punctuated":
         punctuated_text_pipeline(speech, pso, categorizer)
-    if content_type == "text/formatted":
+    elif content_type == "text/formatted":
         formatted_text_pipeline(speech, pso, categorizer)
     else:
         logger.warning("Unknown content-type: %s", content_type)
     if content_type == "empty":
+        logger.warning("Skipping empty content")
         pass
 
     speech["meta"]["classification_version"] = categorizer.classification_version()
