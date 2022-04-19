@@ -140,11 +140,11 @@ def punctuated_text_pipeline(speech, pso, categorizer) -> dict:
     """
     # sentences already have punctuation. Let's use a standard sentence splitter
     sentences = []
-    for sent in sent_tokenize(speech["fulltext"], "french"):
+    for sent in sent_tokenize(speech["text"], "french"):
         sentences.append({"text": sent})
     qualify_sentences(sentences, pso)
     tile_sentences(sentences)
-    categorize_sentences(sentences, speech["fulltext"], categorizer)
+    categorize_sentences(sentences, speech["text"], categorizer)
     speech["sentences"] = sentences
     tag_person_names(speech, categorizer)
     return speech
