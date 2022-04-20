@@ -37,9 +37,13 @@ def qualify_sentences(sentences, pso):
     :param pso: PSO categorizer
     :return: the sentences enhanced with a "type" field
     """
-    logger.info("Qualifity sentence type")
+    logger.info("Qualify sentence type")
     for sent in sentences:
-        sent["type"] = pso.classify(sent["text"])[0]
+        if len(sent) < 2000:
+            try:
+                sent["type"] = pso.classify(sent["text"])[0]
+            except RuntimeError as e:
+                logger.warning("Caught runtime error while categorizing sentence : ", e)
 
 
 def tile_sentences(sentences):
