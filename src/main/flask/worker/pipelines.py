@@ -44,6 +44,7 @@ def qualify_sentences(sentences, pso):
                 sent["type"] = pso.classify(sent["text"])[0]
             except RuntimeError as e:
                 logger.warning("Caught runtime error while categorizing sentence : ", e)
+                sent["type"] = "other"
 
 
 def tile_sentences(sentences):
