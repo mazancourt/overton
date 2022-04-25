@@ -6,7 +6,7 @@ from worker.pipelines import transcript_pipeline, raw_text_pipeline, punctuated_
 logger = get_task_logger(__name__)
 
 
-def enhance(speech, pso, punct, categorizer):
+def enhance(speech, pso, punct, categorizer, namer):
     start = time.time()
     sentences_split = speech.get("sentences_split")
     transcript = speech.get("transcript")
@@ -29,13 +29,13 @@ def enhance(speech, pso, punct, categorizer):
     speech["meta"]["content-type"] = content_type
 
     if content_type == "transcript":
-        transcript_pipeline(speech, pso, punct, categorizer)
+        transcript_pipeline(speech, pso, punct, categorizer, namer)
     elif content_type == "text/raw":
-        raw_text_pipeline(speech, pso, punct, categorizer)
+        raw_text_pipeline(speech, pso, punct, categorizer, namer)
     elif content_type == "text/punctuated":
-        punctuated_text_pipeline(speech, pso, categorizer)
+        punctuated_text_pipeline(speech, pso, categorizer, namer)
     elif content_type == "text/formatted":
-        formatted_text_pipeline(speech, pso, categorizer)
+        formatted_text_pipeline(speech, pso, categorizer, namer)
     else:
         logger.warning("Unknown content-type: %s", content_type)
     if content_type == "empty":
