@@ -3,7 +3,7 @@ Definition of Celery task to enhance a speech
 """
 
 from flask import Flask
-from howler import SentenceBuilder, Semantizer, Howler
+from howler import SentenceBuilder, Semantizer, Howler, Namer
 from howler.deep import Pso
 
 from worker.speech import enhance
@@ -18,12 +18,12 @@ client = make_celery(flask_app)
 PUNCT = None
 PSO = None
 CATEGORIZER = None
-
+NAMER = None
 
 # Lazy loading of resources, to avoid initializing them when importing the package,
 # but still have resource loaded once.
 def _lazy_load():
-    global PUNCT, PSO, CATEGORIZER
+    global PUNCT, PSO, CATEGORIZER, NAMER
     if not PUNCT:
         PUNCT = SentenceBuilder()
     if not PSO:
@@ -34,6 +34,8 @@ def _lazy_load():
                              stop_list_file=flask_app.config["KILL_LIST"])
         CATEGORIZER.config(compound_score_ratio=0.0, simple_word_min_score=0.0,
                            semantizer=Semantizer(), similarity_threshold=0.56)
+    if not NAMER:
+        NAMER = Namer()
 
 
 @client.task
@@ -45,5 +47,5 @@ def enhance_speech(speech_json):
     """
     _lazy_load()
     parsed = enhance(
-        speech_json, punct=PUNCT, pso=PSO, categorizer=CATEGORIZER)
+        speech_json, punct=PUNCT, pso=PSO, categorizer=CATEGORIZER, namer=NAMER)
     return parsed

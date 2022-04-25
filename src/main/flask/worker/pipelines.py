@@ -4,13 +4,13 @@ Each pipeline returns the updated speech object
 """
 import logging
 import re
-from collections import Counter
 
 from howler import TextTiler
 from nltk import sent_tokenize
 
 from worker.aligner import align_sentences
 from worker.categorizer import categorize_sentences
+from worker.tag_persons import tag_person_names
 
 tiler = TextTiler()
 logger = logging.getLogger(__name__)
@@ -59,22 +59,8 @@ def tile_sentences(sentences):
         sent["chunk_id"] = tiles[i]
 
 
-def tag_person_names(speech, categorizer):
-    """
-    Annotate each sentence with person names identified in it
-    :param speech: the speech data
-    :param categorizer: the NLP engine
-    :return: Nothing
-    """
-    all_persons = Counter()
-    for sentence in speech["sentences"]:
-        sent_persons = categorizer.extract_persons(sentence["text"])
-        sentence["persons"] = list(sent_persons.keys())
-        all_persons.update(sent_persons)
-    speech["meta"]["persons"] = dict(all_persons)
 
-
-def transcript_pipeline(speech, pso, punct, categorizer) -> dict:
+def transcript_pipeline(speech, pso, punct, categorizer, namer) -> dict:
     """
     Analysis for video transcripts:
     - repunctuate,
@@ -101,11 +87,11 @@ def transcript_pipeline(speech, pso, punct, categorizer) -> dict:
     qualify_sentences(sentences, pso)
     categorize_sentences(sentences, fulltext, categorizer)
     speech["sentences"] = sentences
-    tag_person_names(speech, categorizer)
+    tag_person_names(speech, categorizer, namer)
     return speech
 
 
-def raw_text_pipeline(speech, punct, pso, categorizer) -> dict:
+def raw_text_pipeline(speech, punct, pso, categorizer, namer) -> dict:
     """
     Analysis for concatenated transcript text
     - repunctuate,
@@ -126,11 +112,11 @@ def raw_text_pipeline(speech, punct, pso, categorizer) -> dict:
     qualify_sentences(sentences, pso)
     categorize_sentences(sentences, speech["fulltext"], categorizer)
     speech["sentences"] = sentences
-    tag_person_names(speech, categorizer)
+    tag_person_names(speech, categorizer, namer)
     return speech
 
 
-def punctuated_text_pipeline(speech, pso, categorizer) -> dict:
+def punctuated_text_pipeline(speech, pso, categorizer, namer) -> dict:
     """
     Analysis for text with punctuation but no paragraph breaks
     - extract sentences using punctuation,
@@ -151,11 +137,11 @@ def punctuated_text_pipeline(speech, pso, categorizer) -> dict:
     tile_sentences(sentences)
     categorize_sentences(sentences, speech["text"], categorizer)
     speech["sentences"] = sentences
-    tag_person_names(speech, categorizer)
+    tag_person_names(speech, categorizer, namer)
     return speech
 
 
-def formatted_text_pipeline(speech, pso, categorizer) -> dict:
+def formatted_text_pipeline(speech, pso, categorizer, namer) -> dict:
     """
     Analysis for text with punctuation and paragraph breaks (usually from web crawling)
     Speech might include "title" and "description" fields together with mandatory "text"
@@ -184,5 +170,5 @@ def formatted_text_pipeline(speech, pso, categorizer) -> dict:
     qualify_sentences(sentences, pso)
     categorize_sentences(sentences, fulltext, categorizer)
     speech["sentences"] = sentences
-    tag_person_names(speech, categorizer)
+    tag_person_names(speech, categorizer, namer)
     return speech
