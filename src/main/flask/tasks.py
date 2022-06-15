@@ -24,16 +24,17 @@ NAMER = None
 # but still have resource loaded once.
 def _lazy_load():
     global PUNCT, PSO, CATEGORIZER, NAMER
-    if not PUNCT:
+    if flask_app.config["ENABLE_DEEP_SENTENCE_BUILDER"] and not PUNCT:
         PUNCT = SentenceBuilder()
-    if not PSO:
+    if flask_app.config["ENABLE_DEEP_PSO"] and not PSO:
         PSO = Pso()
     if not CATEGORIZER:
         CATEGORIZER = Howler("fr",
                              categorisation_file=flask_app.config["CATEGORIES_JSON"],
                              stop_list_file=flask_app.config["KILL_LIST"])
         CATEGORIZER.config(compound_score_ratio=0.0, simple_word_min_score=0.0,
-                           semantizer=Semantizer(), similarity_threshold=0.56)
+                           semantizer=Semantizer() if flask_app.config["ENABLE_DEEP_CATEGORIZER"] else None,
+                           similarity_threshold=0.56)
     if not NAMER:
         NAMER = Namer()
 

@@ -25,8 +25,11 @@ def repunctuate(text, punct):
     """
     logger.info("Restoring punctuation")
     sentences = []
-    for sent in punct.rebuild_sentences(text):
-        sentences.append({"text": sent})
+    if punct:
+        for sent in punct.rebuild_sentences(text):
+            sentences.append({"text": sent})
+    else:
+        sentences.append({"text", text})
     return sentences
 
 
@@ -39,12 +42,14 @@ def qualify_sentences(sentences, pso):
     """
     logger.info("Qualify sentence type")
     for sent in sentences:
-        if len(sent) < 2000:
+        if len(sent) < 2000 and pso:
             try:
                 sent["type"] = pso.classify(sent["text"])[0]
             except RuntimeError as e:
                 logger.warning("Caught runtime error while categorizing sentence : ", e)
                 sent["type"] = "other"
+        else:
+            sent["type"] = "na"
 
 
 def tile_sentences(sentences):
