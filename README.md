@@ -1,75 +1,31 @@
-# politexts
+# Overton NLP web service
 
-Scrapping and indexation of political speeches.
+This web-service handles the NLP analysis for Hedwige contents.
 
-This project contains basic utilities to connect to ElasticSearch and use 
-a classification model from Huggingface. It also provides scrapping scripts
-(using `scrapy.io`) for different French political and news sites.
+It is built on top of flask for the server and Celery for the task manager. The NLP itself
+is handled by the `howler` component.
 
-# How to use
+## Start/Stop
 
-The build is managed by `pybuilder` which generates the python packages, handles 
-unit tests etc. The description of the project is in the `build.py` file.
-
-The following steps are required:
-
-1. build the `overton` package
-2. install it
-3. create the index
-4. use `scrapy` to scrap and index websites
-
-## Build
-
-Simply type:
-
+To start backend services:
 ```shell
-pyb
+$ ./start-services.sh
 ```
+It starts a REDIS server through docker (see docker-compose.yml) and the Celery server
 
-This will create a `overton` package in the `target/dist` directory
-
-## Install
-
-The package created by `pybuilder` can be directly installed through `pip`
-
+To start Flask Web Server:
 ```shell
-pip install target/dist/overton-1.0.dev1
+$ ./start-nlp-server.sh
 ```
 
-(replace version with the correct one)
-
-## Create index
-The following code will create the index and the corresponding mappings
-
-```python
-from overton.elasticsearch import Polindex
-
-Polindex.connect(servers="***", user="***", password="***")
-Polindex.create_index()
-```
-
-## Scrap and index
-
-Scrapping is handled by [scrapy](https://scrapy.org). The provided pipelines index the speeches directly in ElasticSearch, using [elasticsearch_dsl](https://elasticsearch-dsl.readthedocs.io/en/latest/). The classes corresponding to the political speeches are defined in `src/main/python/politexts/elasticsearch`. The `politexts`package allows to use them freely in any client application.
-
-You must provide the following variables in your environment or directly in `poliscrap/poliscrap/settings.py` (the same that were used for index creation)
-
-- `ELASTICSEARCH_HOSTS` : (list of) ES hosts
-- `ELASTICSEARCH_USERNAME`,
-- `ELASTICSEARCH_PASSWORD`: credentials to access ES server
-
-You can then use the standard `scrapy` commands, especially for crawling:
-
+To stop the backend services:
 ```shell
-cd poliscrap
-scrapy crawl vie_publique
+$ ./stop-services.sh
 ```
+To stop the Flask server, simply kill the associated process.
 
-There are currently two crawlers defined (that can be used as arguments to the `scrapy crawl` command):
+## Configuration
+All configuration flags from `src/main/config.py` are overrideable through environment - simply create a `.env` file with corresponding names.
 
-* `vie_publique`: political speeches from https://www.vie-publique.fr/discours
-* `rn`: speeches from the French Rassemblement National website (https://rassemblementnational.fr)
-
-All crawlers implement a `DEPTH_LIMIT` value to restrict the crawling if needed. This can be set through the environment variable with the same name.
-
-_Warning_: if you plan to index the whole `vie_publique` site, plan to iterate two or three times: the web servers appears to crash for some reason after an important number of requests. Look at the logs to see at which page you should restart your crawling. This is may be a preventive policy, but doesn't look like it. 
+## Advanced settings
+By default, the Celery server is starting in 'solo' mode, meaning that it doesn't fork nor parallelizes tasks. This is needed to run deep-learning modules.

@@ -1,5 +1,6 @@
 howler==1.2.1
 hedwige_utils
+hedwige-es
 scrapy
 pandas
 elasticsearch
