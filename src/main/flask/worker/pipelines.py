@@ -60,8 +60,13 @@ def tile_sentences(sentences):
     """
     logger.info("Building text chunks from sentences")
     tiles = tiler.tile([sent["text"] for sent in sentences])
+    last_chunk_id = 0
     for i, sent in enumerate(sentences):
-        sent["chunk_id"] = tiles[i]
+        if i < len(tiles):
+            sent["chunk_id"] = tiles[i]
+            last_chunk_id = tiles[i]
+        else:
+            sent["chunk_id"] = last_chunk_id
 
 
 
