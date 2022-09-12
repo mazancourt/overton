@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "zones": [
+      {
+        "compute_attribution": true,
+        "content_type": "text/formatted",
+        "fields": [
+          "title",
+          "description",
+          "fulltext"
+        ]
+      }
+    ]
+  },
+  "_parsed": {
+    "description": {
+      "doc": {
+        "speaking": [],
+        "text": "* Ardèche Aubenas : le Salon des sports revient pour aider à choisir sa pratique *\n\nC'est l'un des moments les plus attendus par les associations sportives d'Aubenas.\nLe Salon des sports fait ...\n\n20:11"
+      },
+      "paragraphs": [
+        {
+          "chunk_id": 0,
+          "persons": [],
+          "speaking": null,
+          "text": "* Ardèche Aubenas : le Salon des sports revient pour aider à choisir sa pratique *\n\nC'est l'un des moments les plus attendus par les associations sportives d'Aubenas.\nLe Salon des sports fait ...\n\n20:11"
+        }
+      ]
+    },
+    "fulltext": {
+      "doc": {
+        "speaking": [],
+        "text": "* Ardèche Aubenas : le Salon des sports revient pour aider à choisir sa pratique *\n\nC'est l'un des moments les plus attendus par les associations sportives d'Aubenas.\nLe Salon des sports fait son retour samedi 10 septembre à l'espace Lienhart.\nPlus d'une quarantaine de clubs sont attendus pour aider les Albenassiens à découvrir l'offre sportive proposée dans la commune.\n\nPar A.G.\n- Aujourd'hui à 20:11 | mis à jour aujourd'hui à 20:13 - Temps de lecture :\n\n|\n\n|\n\nLe service des sports de la Ville d'Aubenas sera également présent lors du salon.\nPhoto Le DL/Anthony GONZALEZ\n\nLes clubs n'en pouvaient plus d'attendre.\nStéphane Civier l'a bien compris. \"\nÀ chaque assemblée générale, j'avais droit à coup sûr à la question \", sourit l'adjoint de la mairie d'Aubenas en charge des sports.\nAprès deux années d'absence, le Salon des sports va bien faire son retour samedi 10 septembre à l'espace Lienhart pour une nouvelle édition.\n* 10 à 20 % de... *\n\n- Société\n\n- Vie associative\n\n-"
+      },
+      "paragraphs": [
+        {
+          "chunk_id": 0,
+          "persons": [
+            {
+              "first_name": "",
+              "last_name": "Lienhart"
+            },
+            {
+              "first_name": "",
+              "last_name": "Albenassiens"
+            }
+          ],
+          "speaking": null,
+          "text": "* Ardèche Aubenas : le Salon des sports revient pour aider à choisir sa pratique *\n\nC'est l'un des moments les plus attendus par les associations sportives d'Aubenas.\nLe Salon des sports fait son retour samedi 10 septembre à l'espace Lienhart.\nPlus d'une quarantaine de clubs sont attendus pour aider les Albenassiens à découvrir l'offre sportive proposée dans la commune."
+        },
+        {
+          "chunk_id": 1,
+          "persons": [
+            {
+              "first_name": "Stéphane",
+              "last_name": "Civier"
+            },
+            {
+              "first_name": "",
+              "last_name": "Lienhart"
+            }
+          ],
+          "speaking": null,
+          "text": "Par A.G.\n- Aujourd'hui à 20:11 | mis à jour aujourd'hui à 20:13 - Temps de lecture :\n\n|\n\n|\n\nLe service des sports de la Ville d'Aubenas sera également présent lors du salon.\nPhoto Le DL/Anthony GONZALEZ\n\nLes clubs n'en pouvaient plus d'attendre.\nStéphane Civier l'a bien compris. \"\nÀ chaque assemblée générale, j'avais droit à coup sûr à la question \", sourit l'adjoint de la mairie d'Aubenas en charge des sports.\nAprès deux années d'absence, le Salon des sports va bien faire son retour samedi 10 septembre à l'espace Lienhart pour une nouvelle édition.\n* 10 à 20 % de... *\n\n- Société\n\n- Vie associative\n\n-"
+        }
+      ]
+    },
+    "title": {
+      "doc": {
+        "speaking": [],
+        "text": "Ardèche.\nAubenas : le Salon des sports revient pour aider à choisir sa pratique"
+      },
+      "paragraphs": [
+        {
+          "chunk_id": 0,
+          "persons": [],
+          "speaking": null,
+          "text": "Ardèche.\nAubenas : le Salon des sports revient pour aider à choisir sa pratique"
+        }
+      ]
+    }
+  },
+  "description": "* Ardèche Aubenas : le Salon des sports revient pour aider à choisir sa pratique *\n\nC'est l'un des moments les plus attendus par les associations sportives d'Aubenas. Le Salon des sports fait ...\n\n20:11",
+  "fulltext": "* Ardèche Aubenas : le Salon des sports revient pour aider à choisir sa pratique *\n\nC'est l'un des moments les plus attendus par les associations sportives d'Aubenas. Le Salon des sports fait son retour samedi 10 septembre à l'espace Lienhart. Plus d'une quarantaine de clubs sont attendus pour aider les Albenassiens à découvrir l'offre sportive proposée dans la commune.\n\nPar A.G. - Aujourd'hui à 20:11 | mis à jour aujourd'hui à 20:13 - Temps de lecture :\n\n|\n\n|\n\nLe service des sports de la Ville d'Aubenas sera également présent lors du salon. Photo Le DL/Anthony GONZALEZ\n\nLes clubs n'en pouvaient plus d'attendre. Stéphane Civier l'a bien compris. \" À chaque assemblée générale, j'avais droit à coup sûr à la question \", sourit l'adjoint de la mairie d'Aubenas en charge des sports. Après deux années d'absence, le Salon des sports va bien faire son retour samedi 10 septembre à l'espace Lienhart pour une nouvelle édition.\n\n* 10 à 20 % de... *\n\n- Société\n\n- Vie associative\n\n-",
+
+  "published": "2022-09-04T18:16:42",
+  "title": "Ardèche. Aubenas : le Salon des sports revient pour aider à choisir sa pratique",
+  "url": "https://www.ledauphine.com/societe/2022/09/04/aubenas-le-salon-des-sports-revient-pour-aider-a-choisir-sa-pratique"
+}

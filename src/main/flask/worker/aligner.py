@@ -4,11 +4,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def align_sentences(transcript, sentences):
+def align_sentences(transcript, sentences, max_distance=2000):
     """
     Aligns sentences with verbatims found in the speech. Adds appx start and duration for each sentence
 
-    :param transcript: timestamped text elements that yield to the (rebuilt) sentences
+    :param transcript: timestamped text elements that made to the (rebuilt) sentences
     :param sentences: the list of rebuilt sentences from the input text
     :return: True if all sentences were aligned
     """
@@ -62,7 +62,7 @@ def align_sentences(transcript, sentences):
                 pos = text_block.find(candidate_block, pos_in_text)
                 # verify that we're not matching a chunk miles away and that the next chunk is coherent
                 candidate_next_block = SentenceBuilder.depunctuate(transcript[n+1]["text"]).replace(" ", "")
-                if pos > 0 and pos - pos_in_text < 2000 and \
+                if pos > 0 and pos - pos_in_text < max_distance and \
                         text_block[pos+len(candidate_block):].startswith(candidate_next_block):
                     logger.info(f"Catch up: forward {chunk_id} to {n}")
                     pos_in_text = pos
@@ -87,3 +87,18 @@ def align_sentences(transcript, sentences):
             duration_prev_sentence = s["duration"]
 
     return alignment_ok, num_sentences, aligned_sentences
+
+
+def align_paragraphs(transcript, paragraphs):
+    """
+    Align list of paragraphs with timestamps
+    :param transcript: timestamped transcript
+    :param paragraphs: list of list of sentences
+    :return: status of alignment, number of paragraphs and a dict of aligned paragraphs
+    """
+    para_struct = []
+    for para in paragraphs:
+        para_struct.append({"text": " ".join(para)})
+    align_ok, num_para, aligned_para = align_sentences(transcript, para_struct, max_distance=5000)
+    return align_ok, num_para, para_struct
+

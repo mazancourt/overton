@@ -10,7 +10,15 @@ from nltk import word_tokenize
 logger = logging.getLogger(__name__)
 
 
-def categorize_sentences(sentences, fulltext, categorizer):
+def categorize_sentences(sentences, fulltext, categorizer, legacy=True):
+    """
+    Extracts terms and categories, map them to sentences (or paragraphs)
+    :param sentences: list of sentences/paragraphs to tag
+    :param fulltext: the concatenated text of all sentences
+    :param categorizer: the extractor (Howler)
+    :param legacy: create legacy format of flat one
+    :return: None
+    """
     logger.info("Extracting terms & categories")
     terms = categorizer(fulltext)
     logger.info("Mapping terms to sentences")
@@ -19,7 +27,8 @@ def categorize_sentences(sentences, fulltext, categorizer):
         for term in terms:
             lookup_term_re[term] = re.compile(r"\b" + re.escape(term) + r"\b", re.IGNORECASE)
         for sent in sentences:
-            sent["categories"] = {}
+            if legacy:
+                sent["categories"] = {}
             sentence_terms = []
             for term in terms:
                 if re.search(lookup_term_re[term], sent["text"]):
@@ -47,14 +56,24 @@ def categorize_sentences(sentences, fulltext, categorizer):
             for cat in sentence_categories.keys():
                 cats.append((cat, math.exp(sentence_categories[cat]) / e_sum))
             # sort categories by score
-            cats.sort(key=itemgetter(1), reverse=True)
-            sent["categories"] = dict((str(c), s) for c, s in cats)
-            # debug info: get source matching cat
-            sent["debug"] = {}
-            for t in sentence_terms:
-                c = terms[t]["category"]
-                if c and terms[t]["source"]:
-                    c += ":" + terms[t]["source"]
-                sent["debug"][t] = c
+            if legacy:
+                cats.sort(key=itemgetter(1), reverse=True)
+                sent["categories"] = dict((str(c), s) for c, s in cats)
+                # debug info: get source matching cat
+                sent["debug"] = {}
+                for t in sentence_terms:
+                    c = terms[t]["category"]
+                    if c and terms[t]["source"]:
+                        c += ":" + terms[t]["source"]
+                    sent["debug"][t] = c
+            else:   # flat format
+                # normalize category score
+                sent["cats"] = [{"value": cat, "score": score} for cat, score in cats]  # remove low scores ?
+                sent["mapping"] = [{"value": term, "category": terms[term]["category"]} for term in sentence_terms]
+                sent["all_terms"] = list(sentence_terms)
     else:
         logger.warning("No terms found")
+
+
+def categorize_paragraphs(paragraphs, fulltext, extractor):
+    categorize_sentences(paragraphs, fulltext, extractor, legacy=False)

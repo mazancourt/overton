@@ -3,15 +3,19 @@ Definition of Celery task to enhance a speech
 """
 
 from flask import Flask
-from howler import SentenceBuilder, Semantizer, Howler, Namer
+from howler import SentenceBuilder, Semantizer, Howler, Namer, TextTiler
 from howler.deep import Pso
 
-from worker.speech import enhance
+from worker.speech import enhance, hot_parse, politics_parse
 from worker.celery import make_celery
-
+from worker.utils import Tools
 
 flask_app = Flask(__name__)
 flask_app.config.from_object("config")
+flask_app.config.update(CELERY_CONFIG={
+    "broker_url": flask_app.config['CELERY_BACKEND'],
+    "result_backend": flask_app.config['CELERY_BACKEND']
+})
 
 client = make_celery(flask_app)
 
@@ -19,11 +23,11 @@ PUNCT = None
 PSO = None
 CATEGORIZER = None
 NAMER = None
-
+TOOLS = None
 # Lazy loading of resources, to avoid initializing them when importing the package,
 # but still have resource loaded once.
 def _lazy_load():
-    global PUNCT, PSO, CATEGORIZER, NAMER
+    global PUNCT, PSO, CATEGORIZER, NAMER, TOOLS
     if flask_app.config["ENABLE_DEEP_SENTENCE_BUILDER"] and not PUNCT:
         PUNCT = SentenceBuilder()
     if flask_app.config["ENABLE_DEEP_PSO"] and not PSO:
@@ -37,11 +41,36 @@ def _lazy_load():
                            similarity_threshold=0.56)
     if not NAMER:
         NAMER = Namer()
+    TOOLS = Tools(sentence_builder=PUNCT, pso=PSO, namer=NAMER, howler=CATEGORIZER, text_tiler=TextTiler("fr"))
+    return TOOLS
+
+@client.task
+def enhance_hot(speech_json):
+    """
+    Hot version of
+    :param speech_json:
+    :return:
+    """
+    _lazy_load()
+    parsed = hot_parse(speech_json, tools=TOOLS)
+    return parsed
+
+@client.task
+def enhance_politics(speech_json):
+    """
+    Hot version of
+    :param speech_json:
+    :return:
+    """
+    _lazy_load()
+    parsed = politics_parse(speech_json, tools=TOOLS)
+    return parsed
 
 
 @client.task
 def enhance_speech(speech_json):
     """
+    ** legacy version **
     Enhances the speech with sentences, categories and types (problem/solution/other)
     :param speech_json: the json containing the speech
     :return: the json with a "sentences" block containing the enhanced sentences. Other elements are left as is
