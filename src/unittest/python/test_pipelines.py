@@ -16,7 +16,6 @@ class TestPipelines(unittest.TestCase):
         cls.cwd = Path(os.path.dirname(os.path.realpath(__file__)))
         cls.tools = _lazy_load()
 
-
     def test_politics_pipeline(self):
         with open(self.cwd / "politics_article.json") as art:
             speech = json.load(art)
@@ -27,6 +26,12 @@ class TestPipelines(unittest.TestCase):
         self.assertIn("salon des sports", terms)
         self.assertIn("Sport", cats)
 
+    def test_hot_attribution(self):
+        with open(self.cwd / "article_elections.json") as art:
+            speech = json.load(art)
+        extracted = hot_parse(speech, self.tools)
+        self.assertIn("Emmanuel Macron", speech["speaking"])
+        self.assertIn("Jean-Luc Mélenchon", speech["speaking"])
 
     def test_hot_pipeline(self):
         with open(self.cwd / "crawled_article.json") as art:

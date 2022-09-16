@@ -273,7 +273,8 @@ def formatted_text_hot_pipeline(speech, tools: Tools, zone: Zone) -> dict:
                 tag_person_names(speech["_parsed"][field], tools.howler, tools.namer, by_paragraphs=True)
                 speakers = attribute_paragraphs(speech["_parsed"][field]["paragraphs"])
                 speech["_parsed"][field]["doc"]["speaking"] = speakers
-
+            elif zone.speaker:
+                speech["_parsed"][field]["doc"]["speaking"] = [zone.speaker]
     return speech
 
 def politics_pipeline(speech:dict, zones:dict, tools:Tools)  -> dict:

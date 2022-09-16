@@ -1,7 +1,7 @@
+from typing import List
 from dataclasses import dataclass
 from howler import SentenceBuilder, Semantizer, Howler, Namer, TextTiler
 from howler.deep import Pso
-from typing import List
 
 
 @dataclass
@@ -22,3 +22,4 @@ class Zone:
     fields: List[str]
     lang: str = "fr"
     compute_attribution: bool = False
+    speaker: str = None
