@@ -8,12 +8,14 @@ from collections import defaultdict
 
 from howler import TextTiler
 from nltk import sent_tokenize
+from speechlib import Zone
+
 #from icecream import ic
 
 from worker.aligner import align_sentences, align_paragraphs
 from worker.categorizer import categorize_sentences, categorize_paragraphs
 from worker.tag_persons import tag_person_names, attribute_paragraphs
-from worker.utils import Zone, Tools
+from worker.utils import Tools
 
 tiler = TextTiler()
 logger = logging.getLogger(__name__)
