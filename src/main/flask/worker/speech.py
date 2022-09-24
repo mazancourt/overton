@@ -2,9 +2,11 @@ import time
 from dataclasses import dataclass
 
 from celery.utils.log import get_task_logger
+from speechlib import Zone
+
 from worker.pipelines import transcript_pipeline, raw_text_pipeline, punctuated_text_pipeline, formatted_text_pipeline, \
     transcript_hot_pipeline, formatted_text_hot_pipeline, politics_pipeline
-from worker.utils import Zone, Tools
+from worker.utils import Tools
 
 logger = get_task_logger(__name__)
 
