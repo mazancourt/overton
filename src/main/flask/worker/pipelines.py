@@ -299,6 +299,10 @@ def politics_pipeline(speech:dict, zones:dict, tools:Tools)  -> dict:
             if doc:
                 fulltext += doc["text"] + "\n\n"
             para = speech["_parsed"][field].get("paragraphs")
+            if zone.speaker:
+                for p in para:
+                    if not p["speaking"]:
+                        p["speaking"] = zone.speaker
             if para:
                 all_paragraphs.extend(para)
     categorize_paragraphs(all_paragraphs, fulltext, tools.howler)

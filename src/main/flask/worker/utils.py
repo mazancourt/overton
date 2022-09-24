@@ -11,15 +11,3 @@ class Tools:
     pso: Pso
     namer: Namer
     text_tiler: TextTiler
-
-@dataclass
-class Zone:
-    """
-    Zone in a speech header.
-    Zones allow to determine different content-types for different fields in the incoming speech
-    """
-    content_type: str
-    fields: List[str]
-    lang: str = "fr"
-    compute_attribution: bool = False
-    speaker: str = None
