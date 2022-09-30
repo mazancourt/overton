@@ -303,7 +303,7 @@ def politics_pipeline(speech:dict, zones:dict, tools:Tools)  -> dict:
             para = speech["_parsed"][field].get("paragraphs")
             if zone.speaker:
                 for p in para:
-                    if not p["speaking"]:
+                    if not p.get("speaking"):
                         p["speaking"] = zone.speaker
             if para:
                 all_paragraphs.extend(para)
