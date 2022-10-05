@@ -2,11 +2,14 @@ from collections import Counter
 
 from flask import Flask, jsonify, request
 from worker.celery import make_celery
-from tasks import enhance_speech
+from tasks import enhance_speech, enhance_hot, enhance_politics
 
 app = Flask(__name__)
 app.config.from_object("config")
-
+app.config.update(CELERY_CONFIG={
+    "broker_url": app.config['CELERY_BACKEND'],
+    "result_backend": app.config['CELERY_BACKEND']
+})
 client = make_celery(app)
 
 @app.route('/transcript', methods=['POST'])
@@ -17,6 +20,26 @@ def transcript():
     """
     speech = request.get_json()
     task = enhance_speech.delay(speech)
+    return jsonify({"id": task.id})\
+
+@app.route('/hot', methods=['POST'])
+def hot_parse():
+    """
+    Enqueues a speech for hot enhancement
+    :return: the task-id
+    """
+    speech = request.get_json()
+    task = enhance_hot.delay(speech)
+    return jsonify({"id": task.id})
+
+@app.route('/politics', methods=['POST'])
+def politics_parse():
+    """
+    Enqueues a speech for NLP enhancements
+    :return: the task-id
+    """
+    speech = request.get_json()
+    task = enhance_politics.delay(speech)
     return jsonify({"id": task.id})
 
 
