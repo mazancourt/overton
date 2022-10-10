@@ -1,5 +1,7 @@
 # reconstitutes video paragraphs and "documents" from the "bysentence" tweets
 import datetime
+import re
+
 from dotenv import load_dotenv
 
 from hedwige_es.schema import HedwigeIndex, Tweet, HParagraph, YT
@@ -33,7 +35,9 @@ while start < last:
 
     all_videos = dict()
     for yt in s.scan():
-        vid, n = yt.meta.id.split("_")
+        match = re.match(r"(.*)_(\d+)$", yt.meta.id)
+        vid = match.group(1)
+        n = match.group(2)
         para_num = int(yt["chunk_id"])
         if not all_videos.get(vid):
             all_videos[vid] = dict()
@@ -81,6 +85,6 @@ while start < last:
             para.save(using=yt_para_v3.es, index=yt_para_v3.index)
             logger.info("saved paragraph %s in %s", para.meta.id, yt_para_v3.index)
 
-    if r.hits.total.value > 0:
-        break
+#    if r.hits.total.value > 0:
+#        break
 logging.info("Finished re-import")
