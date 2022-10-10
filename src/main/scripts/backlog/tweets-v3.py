@@ -23,6 +23,7 @@ tweets_v3.connect()
 tweets_para_v3 = HedwigeIndex("speech-paragraph-twitter-v3")
 tweets_para_v3.connect()
 
+# Collect tweets per day, rebuild the "paragraph" = 1 tweet for each.
 while start < last:
     end = start + increment
     s = Tweet.search(using=tweets_v1.es, index=tweets_v1.index)
@@ -78,3 +79,5 @@ while start < last:
         para.all_terms = para.relevant_terms
         para.classification = list(all_tweets[tweet_id]["categories"])
         para.save(using=tweets_para_v3.es, index=tweets_para_v3.index)
+
+logging.info("Finished re-import")
