@@ -38,7 +38,10 @@ while start < last:
         match = re.match(r"(.*)_(\d+)$", yt.meta.id)
         vid = match.group(1)
         n = match.group(2)
-        para_num = int(yt["chunk_id"])
+        if "chunk_id" in yt:
+            para_num = int(yt["chunk_id"])
+        else:
+            para_num = 0
         if not all_videos.get(vid):
             all_videos[vid] = dict()
         if not all_videos[vid].get(para_num):
