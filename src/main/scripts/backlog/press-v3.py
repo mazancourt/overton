@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 load_dotenv()
 
-start = datetime.datetime(2022, 6, 1)
+start = datetime.datetime(2022, 4, 1)
 increment = datetime.timedelta(days=1)
 last = datetime.datetime(2022, 9, 14, 23, 30, 0)
 press_v1 = HedwigeIndex("article-document-press-v1")
