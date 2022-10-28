@@ -17,3 +17,4 @@ redis
 https://github.com/explosion/spacy-models/releases/download/fr_core_news_md-3.4.0/fr_core_news_md-3.4.0.tar.gz
 nltk
 speechlib>=1.1.4
+sacremoses
