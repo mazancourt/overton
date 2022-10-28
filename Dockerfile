@@ -17,7 +17,7 @@ COPY requirements.txt /app/
 WORKDIR /app
 
 # install requirements
-RUN pip install --trusted-host pypi.hedwige.fr --extra-index-url=http://datapolitics:${PYPI_PASSWD}@pypi.hedwige.fr:8080/simple -r requirements.txt
+RUN pip install --trusted-host pypi.hedwige.fr --extra-index-url=http://datapolitics:hyHqykgzb8QF@pypi.hedwige.fr:8080/simple -r requirements.txt
 
 # expose the app port
 EXPOSE ${PORT}
