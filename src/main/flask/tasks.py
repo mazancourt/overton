@@ -10,6 +10,10 @@ from worker.speech import enhance, hot_parse, politics_parse
 from worker.celery import make_celery
 from worker.utils import Tools
 
+import nltk
+
+nltk.download("punkt")  # to be moved into Howler ?
+
 flask_app = Flask(__name__)
 flask_app.config.from_object("config")
 flask_app.config.update(CELERY_CONFIG={

@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CELERY_BACKEND = 'redis://default:nlp4tf1@localhost:6379'
+CELERY_BACKEND = os.environ.get('CELERY_BACKEND', 'redis://default:nlp4tf1@localhost:6379')
 
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-WORD_EMBEDDINGS = os.environ.get("WORD_EMBEDDINGS")
+# WORD_EMBEDDINGS = os.environ.get("WORD_EMBEDDINGS")
 CATEGORIES_JSON = os.environ.get("CATEGORIES_JSON")
 KILL_LIST = os.environ.get("KILL_LIST")
 

@@ -1,7 +1,45 @@
 # Redis with a password, to avoid external attacks
 services:
+    flask:
+        image: overton:dev
+        ports:
+            - ${WS_PORT}:5000
+        environment:
+            CELERY_BACKEND: "redis://default:nlp4tf1@redis:6379"
+        command: python3 -m flask run --host=0.0.0.0 --port=5000
+        networks:
+            - overton
+        build:
+            context: .
+            dockerfile: Dockerfile
+
+    worker:
+        image: overton:dev
+        command: celery -A tasks.client worker --concurrency=1 --pool=solo
+        environment:
+            CELERY_BACKEND: "redis://default:nlp4tf1@redis:6379"
+            CATEGORIES_JSON: "/resources/categorisation.json"
+            KILL_LIST: "/resources/kill-list.txt"
+            # disabled for SentenceTransformer version compatibilities in Howler
+            ENABLE_DEEP_CATEGORIZER: "no"
+            ENABLE_DEEP_SENTENCE_BUILDER: "${ENABLE_DEEP_SENTENCE_BUILDER}"
+            ENABLE_DEEP_PSO: "${ENABLE_DEEP_PSO}"
+            HF_API_TOKEN: "${HF_API_TOKEN}"
+        volumes:
+            # share cached version of HF models instead of downloading them at startup
+            - ~/.cache/huggingface:/root/.cache/huggingface
+            - ~/nltk_data:/root/nltk_data
+        depends_on:
+            -   redis
+        networks:
+            - overton
+
     redis:
         image: 'redis'
         command: redis-server --requirepass nlp4tf1
-        ports:
-            - '6379:6379'
+        networks:
+            - overton
+
+networks:
+    overton:
+        driver: bridge
