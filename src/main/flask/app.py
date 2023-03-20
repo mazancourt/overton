@@ -20,7 +20,7 @@ def transcript():
     """
     speech = request.get_json()
     task = enhance_speech.delay(speech)
-    return jsonify({"id": task.id})\
+    return jsonify({"id": task.id})
 
 @app.route('/hot', methods=['POST'])
 def hot_parse():
