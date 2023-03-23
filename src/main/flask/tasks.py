@@ -4,6 +4,7 @@ Definition of Celery task to enhance a speech
 
 from flask import Flask
 from howler import SentenceBuilder, Semantizer, Howler, Namer, TextTiler
+from howler.category import OrgRepository
 from howler.deep import Pso
 
 from worker.speech import enhance, hot_parse, politics_parse
@@ -37,9 +38,13 @@ def _lazy_load():
     if flask_app.config["ENABLE_DEEP_PSO"] and not PSO:
         PSO = Pso()
     if not CATEGORIZER:
+        org_repo = None
+        if flask_app.config["ORGS_LIST"]:
+            org_repo = OrgRepository(flask_app.config["ORGS_LIST"], delimiter=";")
         CATEGORIZER = Howler("fr",
                              categorisation_file=flask_app.config["CATEGORIES_JSON"],
-                             stop_list_file=flask_app.config["KILL_LIST"])
+                             stop_list_file=flask_app.config["KILL_LIST"],
+                             known_orgs_repo=org_repo)
         CATEGORIZER.config(compound_score_ratio=0.0, simple_word_min_score=0.0,
                            semantizer=Semantizer() if flask_app.config["ENABLE_DEEP_CATEGORIZER"] else None,
                            similarity_threshold=0.56)

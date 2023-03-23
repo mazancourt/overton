@@ -4,7 +4,7 @@ from actors import PersonName
 from hedwige_utils import sanitize
 
 
-def tag_person_names(speech, categorizer, namer, by_paragraphs=False):
+def tag_person_names(speech, categorizer, namer, by_paragraphs=False, with_person_names=True):
     """
     Annotate each sentence with person names identified in it
     Try to unify person names, with variation on accents or omission of first name
@@ -33,6 +33,11 @@ def tag_person_names(speech, categorizer, namer, by_paragraphs=False):
                 normalized_person_names[person] = p
                 sent_person_names.append(person)
         sentence["person_names"] = sent_person_names
+        if with_person_names:
+            orgs = categorizer.extract_orgs(sentence["text"])
+            validated = categorizer.validate_orgs(orgs)
+            sentence["orgs"] = list(orgs.keys())
+            sentence["valid_orgs"] = [org for org in validated if validated[org]["ref"]]
 
     merge_to_person = dict()
     # iterate over the persons with the same last name, check if we can unify person names
@@ -70,7 +75,13 @@ def tag_person_names(speech, categorizer, namer, by_paragraphs=False):
         speech["meta"]["persons"] = []
         for p, c in all_persons.most_common():
             speech["meta"]["persons"].append({"first_name": p.first_name, "last_name": p.last_name, "count": c})
-
+        orgs = set()
+        valid_orgs = set()
+        for sentence in speech[name]:
+            orgs.update(sentence["orgs"])
+            valid_orgs.update(sentence["valid_orgs"])
+        speech["meta"]["orgs"] = list(orgs)
+        speech["meta"]["valid_orgs"] = list(orgs)
 
 def attribute_paragraphs(paragraphs):
     """
@@ -95,3 +106,18 @@ def attribute_paragraphs(paragraphs):
         else:
             para["speaking"] = last_attribution.full_name if last_attribution else None
     return [p.full_name for p in doc_persons]
+
+def collect_orgs(paragraphs):
+    """
+    Collect orgs from the paragraph list
+    :param paragraphs:
+    :return: a dict with keys "orgs" (all orgs) and "valid_orgs" (validated orgs)
+    """
+    orgs = set()
+    valid_orgs = set()
+    for para in paragraphs:
+        if "orgs" in para:
+            orgs.update(para["orgs"])
+        if "valid_orgs" in para:
+            valid_orgs.update(para["valid_orgs"])
+    return { "orgs": list(orgs), "valid_orgs": list(valid_orgs) }

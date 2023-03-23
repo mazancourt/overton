@@ -1,0 +1,2 @@
+This directory is used for test purposes.
+The "resources" packaged in the dockerfile is located un /src/main
