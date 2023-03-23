@@ -1,6 +1,6 @@
-howler==2.0.1
+howler==2.1.0
 hedwige_utils
-hedwige-es
+hedwige-es>=1.13
 scrapy
 pandas
 elasticsearch

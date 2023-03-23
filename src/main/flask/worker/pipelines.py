@@ -14,7 +14,7 @@ from speechlib import Zone
 
 from worker.aligner import align_sentences, align_paragraphs
 from worker.categorizer import categorize_sentences, categorize_paragraphs
-from worker.tag_persons import tag_person_names, attribute_paragraphs
+from worker.tag_persons import tag_person_names, attribute_paragraphs, collect_orgs
 from worker.utils import Tools
 
 tiler = TextTiler()
@@ -275,6 +275,7 @@ def formatted_text_hot_pipeline(speech, tools: Tools, zone: Zone) -> dict:
                 tag_person_names(speech["_parsed"][field], tools.howler, tools.namer, by_paragraphs=True)
                 speakers = attribute_paragraphs(speech["_parsed"][field]["paragraphs"])
                 speech["_parsed"][field]["doc"]["speaking"] = speakers
+                speech["_parsed"][field]["doc"].update(collect_orgs(speech["_parsed"][field]["paragraphs"]))
             elif zone.speaker:
                 speech["_parsed"][field]["doc"]["speaking"] = [zone.speaker]
     return speech

@@ -13,6 +13,7 @@ ARG root=src/main
 COPY ${root}/flask/*.py /app/
 COPY ${root}/flask/worker/*.py /app/worker/
 COPY ${root}/resources/* /resources/
+
 COPY requirements.txt /app/
 WORKDIR /app
 
