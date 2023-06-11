@@ -1,4 +1,4 @@
-FROM python:3.8-buster
+FROM python:3.9-buster
 
 # all-in-one dockerfile that encapsulates both Flask server and Celery worker
 # It will be used from docker-compose with different commands (one for the flask server, one for the worker)
