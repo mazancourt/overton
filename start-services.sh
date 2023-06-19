@@ -2,8 +2,7 @@
 # Starts services necessary to run flask application (but not the application itself)
 
 echo "Starting Redis server"
-docker-compose up -d
-#docker run -d --rm --name redis -p 6379:6379 redis
+docker-compose -f docker-compose-redis-only.yml up -d
 
 echo "Starting Celery worker"
 cd src/main/flask

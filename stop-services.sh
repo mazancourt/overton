@@ -4,6 +4,6 @@ echo "Stopping Celery worker"
 cd src/main/flask && celery -A tasks.client control shutdown
 sleep 10
 echo "Stopping Redis database"
-docker-compose down
+docker-compose -f docker-compose-redis-only.yml down
 # docker stop $(docker ps -f name=redis -q)
 echo "Services stopped"
