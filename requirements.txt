@@ -1,4 +1,4 @@
-howler>=2.1.3
+howler>=2.2.0
 hedwige_utils
 hedwige-es>=1.13
 scrapy
@@ -14,7 +14,8 @@ redis
 # force version < 0.11 due to transformers 4.15.0 from howler
 #tokenizers==0.10.3
 # Apparently not enclosed as howler dependency - Keep in sync with Howler's version
-https://github.com/explosion/spacy-models/releases/download/fr_core_news_md-3.4.0/fr_core_news_md-3.4.0.tar.gz
+https://github.com/explosion/spacy-models/releases/download/fr_core_news_md-3.5.0/fr_core_news_md-3.5.0.tar.gz
 nltk
 speechlib>=1.1.4
 sacremoses
+hedwige_actors>=1.8.0

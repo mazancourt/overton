@@ -22,6 +22,12 @@ def tag_person_names(speech, categorizer, namer, by_paragraphs=False, with_perso
     normalized_person_names = dict()
     bylastname = defaultdict(set)
     for sentence in speech[name]:
+        speaking_person = categorizer.extract_speaking(sentence["text"])
+        if speaking_person:
+            sentence["speaking_person"] = {"first_name": speaking_person.first_name,
+                                           "last_name": speaking_person.last_name,
+                                           "title": speaking_person.title,
+                                           "text": str(speaking_person)}
         sent_persons = categorizer.extract_persons(sentence["text"])
         sent_person_names = []
         for person in sent_persons.keys():
@@ -33,6 +39,7 @@ def tag_person_names(speech, categorizer, namer, by_paragraphs=False, with_perso
                 normalized_person_names[person] = p
                 sent_person_names.append(person)
         sentence["person_names"] = sent_person_names
+
         if with_person_names:
             orgs = categorizer.extract_orgs(sentence["text"])
             validated = categorizer.validate_orgs(orgs)
@@ -67,7 +74,7 @@ def tag_person_names(speech, categorizer, namer, by_paragraphs=False, with_perso
                 p = normalized_person_names[person_name]
                 if p in merge_to_person:
                     p = merge_to_person[p]
-                if p.first_name and p.last_name:    # don't care about incomplete names
+                if p.first_name and p.last_name:  # don't care about incomplete names
                     sentence["persons"].append({"first_name": p.first_name, "last_name": p.last_name})
                     all_persons[p] += 1
             del sentence["person_names"]
@@ -83,6 +90,7 @@ def tag_person_names(speech, categorizer, namer, by_paragraphs=False, with_perso
         speech["meta"]["orgs"] = list(orgs)
         speech["meta"]["valid_orgs"] = list(orgs)
 
+
 def attribute_paragraphs(paragraphs):
     """
     Compute attribution for a document split in paragraphs - each paragraph is tagged with a 'speaking' value
@@ -92,20 +100,15 @@ def attribute_paragraphs(paragraphs):
     last_attribution = None
     doc_persons = set()
     for para in paragraphs:
-        if "persons" in para:
-            persons = [PersonName(p["first_name"], p["last_name"]) for p in para["persons"]]
-            if len(persons) == 1:
-                para["speaking"] = persons[0].full_name
-                last_attribution = persons[0]
-                doc_persons.add(persons[0])
-            elif len(persons) > 1:
-                para["speaking"] = None
-                last_attribution = None
-            else:
-                para["speaking"] = last_attribution.full_name if last_attribution else None
+        if "speaking_person" in para:
+            p = para["speaking_person"]
+            person = PersonName(p["first_name"], p["last_name"], p["title"])
+            doc_persons.add(person)
+            para["speaking"] = str(person)
         else:
-            para["speaking"] = last_attribution.full_name if last_attribution else None
-    return [p.full_name for p in doc_persons]
+            para["speaking"] = ""
+    return [str(p) for p in doc_persons]
+
 
 def collect_orgs(paragraphs):
     """
@@ -120,4 +123,4 @@ def collect_orgs(paragraphs):
             orgs.update(para["orgs"])
         if "valid_orgs" in para:
             valid_orgs.update(para["valid_orgs"])
-    return { "orgs": list(orgs), "valid_orgs": list(valid_orgs) }
+    return {"orgs": list(orgs), "valid_orgs": list(valid_orgs)}
