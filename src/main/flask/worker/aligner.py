@@ -42,6 +42,10 @@ def align_sentences(transcript, sentences, max_distance=2000):
         chunk = transcript[chunk_id]
         transcript_block = SentenceBuilder.depunctuate(chunk["text"]).replace(" ", "")
         if text_block[pos_in_text:pos_in_text+len(transcript_block)] == transcript_block:
+            if pos_in_text >= len(char_index):
+                # we're too far in the buffer for some reason, probably at the end of the transcript - give up
+                alignment_ok = False
+                break
             sentence_id = char_index[pos_in_text]
             if not timestamped_sentence[sentence_id]:
                 timestamped_sentence[sentence_id] = True
